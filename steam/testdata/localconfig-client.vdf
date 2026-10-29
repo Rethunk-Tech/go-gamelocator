@@ -1,0 +1,49 @@
+"UserLocalConfigStore"
+{
+	"Broadcast"
+	{
+		"Permissions"		"3"
+	}
+	"system"
+	{
+		"EnableGameOverlay"		"1"
+		"CloudEnabled"		"1"
+	}
+	"friends"
+	{
+		"1000000001"
+		{
+			"NameHistory"
+			{
+				"0"		"previous { name }"
+			}
+		}
+	}
+	"Software"
+	{
+		"Valve"
+		{
+			"Steam"
+			{
+				"apps"
+				{
+					"413150"
+					{
+						"LastPlayed"		"1730000000"
+						"Playtime"		"120"
+					}
+					"1966720"
+					{
+						"LastPlayed"		"1730000100"
+						"LaunchOptions"		"-old %command%"
+					}
+				}
+				"SteamDefaultDialog"		"#app_games"
+			}
+		}
+	}
+	"WebStorage"
+	{
+		"GameNotesTutorialCompleted"		"1"
+	}
+}
