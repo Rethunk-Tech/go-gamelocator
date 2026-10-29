@@ -6,4 +6,16 @@ Notable changes to `go-gamelocator`. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `steam`: locate native and Flatpak Steam from the usual folders, the registry on Windows and folders the caller
+  adds; libraries, installs, build ids, the signed-in account, cached art, client icons and screenshots.
+- `steam`: set launch options and add or remove non-Steam shortcuts without disturbing the rest of the file, with a
+  required one-time backup suffix.
+- `steam`: Proton builds, picking one, the prefix version, and the compatibility tool Steam chose for a game.
+- `steam`: grant Flatpak Steam access to a folder.
+- `gog`, `heroic`, `epic`, `ea`, `xbox`, `lutris`, `bottles`: install folders for each store and launcher, and
+  Heroic's Wine prefixes.
+- `gamelocator.GameDir`: confirm an install by a marker file at its root or in its `game` folder.
+
 [Unreleased]: https://github.com/Rethunk-Tech/go-gamelocator/commits/main
