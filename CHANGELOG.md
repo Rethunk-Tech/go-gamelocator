@@ -6,6 +6,8 @@ Notable changes to `go-gamelocator`. The format follows
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-29
+
 ### Added
 
 - `steam`: locate native and Flatpak Steam from the usual folders, the registry on Windows and folders the caller
@@ -18,4 +20,5 @@ Notable changes to `go-gamelocator`. The format follows
   Heroic's Wine prefixes.
 - `gamelocator.GameDir`: confirm an install by a marker file at its root or in its `game` folder.
 
-[Unreleased]: https://github.com/Rethunk-Tech/go-gamelocator/commits/main
+[Unreleased]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Rethunk-Tech/go-gamelocator/releases/tag/v0.1.0
