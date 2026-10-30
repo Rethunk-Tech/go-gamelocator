@@ -95,3 +95,27 @@ func TestConfigDirsFollowCustomXDGHomes(t *testing.T) {
 		check(t)
 	})
 }
+
+// Without the slug, a config matches only when its keyword also names an exe; the install is then found from the exe
+// or, failing the working dir, from the folder the exe sits in.
+func TestInstallFromYAMLMatchingAndResolving(t *testing.T) {
+	dir := t.TempDir()
+	if err := safefs.WriteFile(filepath.Join(dir, "Stardew Valley.dll"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	m := newMatcher(testGame)
+	for name, c := range map[string]struct{ yml, want string }{
+		"exe names the keyword":        {"game:\n  exe: " + dir + "/stardew.exe\n", dir},
+		"working dir is gone":          {"game:\n  working_dir: " + dir + "/gone\n  exe: " + dir + "/stardew.exe\n", dir},
+		"keyword only in a comment":    {"# stardew\ngame:\n  exe: " + dir + "/other.exe\n", ""},
+		"no keyword anywhere":          {"game:\n  exe: " + dir + "/other.exe\n", ""},
+		"keyword exe in a missing dir": {"game:\n  exe: " + dir + "/gone/stardew.exe\n", ""},
+	} {
+		if got := m.installFromYAML(c.yml); got != c.want {
+			t.Errorf("%s: %q, want %q", name, got, c.want)
+		}
+	}
+	if _, _, err := m.installFromConfig(dir, "absent.yml"); err == nil {
+		t.Error("an absent config read as empty")
+	}
+}

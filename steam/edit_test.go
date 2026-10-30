@@ -90,3 +90,19 @@ func TestSetLaunchOptionsKeepsAClientsFileByteForByte(t *testing.T) {
 		}
 	}
 }
+
+func TestScreenshotsDirFollowsTheSignedInAccount(t *testing.T) {
+	s, dir := signedIn(t)
+	got, err := s.ScreenshotsDir("413150")
+	if want := filepath.Join(filepath.Dir(dir), "760", "remote", "413150", "screenshots"); err != nil || got != want {
+		t.Fatalf("got %q, %v; want %q", got, err, want)
+	}
+	// An account id below the SteamID64 base has no userdata folder to name.
+	writeAt(t, filepath.Join(s.Root, "config", "loginusers.vdf"), []byte(`"users" { "5" { "AccountName" "b" "MostRecent" "1" } }`))
+	if _, err := s.ScreenshotsDir("413150"); err == nil {
+		t.Fatal("an invalid account id named a folder")
+	}
+	if _, err := (Steam{Root: t.TempDir()}).ScreenshotsDir("1"); err == nil {
+		t.Fatal("no account, yet a folder")
+	}
+}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"testing"
 )
@@ -72,5 +73,20 @@ func TestAppNameAtPrefersTheListedProductAndFallsBackToTheFirst(t *testing.T) {
 	}
 	if got := appNameAt(nil, "/elsewhere", nil); got != "" {
 		t.Fatalf("no names: %q", got)
+	}
+}
+
+func TestPublicWrappersUseTheHostOS(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		if got := ListDirs("/mine"); !slices.Equal(got, []string{"/mine"}) {
+			t.Fatalf("ListDirs = %v", got)
+		}
+	}
+	// No launcher lists the folder, so the first name stands and no names gives "".
+	if got := AppNameAt(t.TempDir(), []string{"A", "B"}); got != "A" {
+		t.Fatalf("AppNameAt = %q", got)
+	}
+	if got := AppNameAt(t.TempDir(), nil); got != "" {
+		t.Fatalf("AppNameAt with no names = %q", got)
 	}
 }
