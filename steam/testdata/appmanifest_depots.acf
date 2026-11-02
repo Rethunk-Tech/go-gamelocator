@@ -1,0 +1,19 @@
+"AppState"
+{
+	"appid"		"1000"
+	"name"		"Depot Game"
+	"installdir"		"Depot Game"
+	"InstalledDepots"
+	{
+		"1001"
+		{
+			"manifest"		"7446623914455268361"
+			"size"		"1048576"
+		}
+		"999"
+		{
+			"manifest"		"1111111111111111111"
+			"size"		"42"
+		}
+	}
+}

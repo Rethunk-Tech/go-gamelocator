@@ -6,6 +6,13 @@ Notable changes to `go-gamelocator`. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-02
+
+### Added
+
+- `steam`: an installed app's depots (`InstalledDepots`) and the folder Steam's console `download_depot` writes a depot to (`DepotDownloadDir`).
+- `steam`: find Steam's libraries on macOS, under `~/Library/Application Support/Steam`.
+
 ## [0.1.0] - 2026-10-29
 
 ### Added
@@ -20,5 +27,6 @@ Notable changes to `go-gamelocator`. The format follows
   Heroic's Wine prefixes.
 - `gamelocator.GameDir`: confirm an install by a marker file at its root or in its `game` folder.
 
-[Unreleased]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Rethunk-Tech/go-gamelocator/releases/tag/v0.1.0

@@ -52,6 +52,7 @@ func main() {
 | --- | --- |
 | `steam.Roots`, `LocateAll`, `Locate`, `ProtonBuilds`, `FindProton` | Extra roots come first, then the usual folders, native before Flatpak. A root without `steamapps` is skipped. An empty `home` is the user's home. |
 | `Steam.Libraries`, `InstallDir`, `BuildID` | An app id that would leave its folder finds nothing. `InstallDir` is `""`, not an error, for an app that is not installed. |
+| `steam.InstalledDepots`, `DepotDownloadDir` | `InstalledDepots` reads a library's appmanifest and orders depots by id; no `InstalledDepots` block is an empty list, no manifest wraps `os.ErrNotExist`. `DepotDownloadDir` only builds the path. |
 | `Steam.CurrentAccount` | The `MostRecent` login, else the newest sign-in (ties to the lower id), else `ErrNoAccount`. |
 | `Steam.SetLaunchOptions`, `AddShortcut`, `RemoveShortcuts` | `EditOptions.BackupSuffix` is required: `""` fails before any file is touched. The first edit of a file copies it to `path+suffix`, once, never again. Writes are atomic. Steam must be closed. |
 | `AddShortcut` | Matches an existing entry by exe and `Key` and updates it in place, keeping its `appid`, playtime and tags. An unchanged entry writes nothing. |
