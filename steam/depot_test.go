@@ -1,6 +1,7 @@
 package steam
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -35,5 +36,14 @@ func TestDepotDownloadDir(t *testing.T) {
 	want := filepath.Join("lib", "steamapps", "content", "app_1000", "depot_1001")
 	if got := DepotDownloadDir("lib", "1000", "1001"); got != want {
 		t.Fatalf("dir = %s", got)
+	}
+}
+
+func TestDepotJSONNames(t *testing.T) {
+	t.Parallel()
+
+	b, err := json.Marshal(Depot{ID: "1", Manifest: "2", Size: 3})
+	if err != nil || string(b) != `{"id":"1","manifest":"2","size":3}` {
+		t.Fatalf("json = %s, %v", b, err)
 	}
 }

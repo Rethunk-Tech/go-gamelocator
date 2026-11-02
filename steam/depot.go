@@ -10,9 +10,9 @@ import (
 
 // Depot is one depot an installed app has on disk, from its appmanifest's InstalledDepots block.
 type Depot struct {
-	ID       string
-	Manifest string
-	Size     int64
+	ID       string `json:"id"`
+	Manifest string `json:"manifest"`
+	Size     int64  `json:"size"`
 }
 
 // InstalledDepots lists the depots appID has installed in library (a library folder, as Libraries returns it),

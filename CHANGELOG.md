@@ -6,6 +6,12 @@ Notable changes to `go-gamelocator`. The format follows
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-02
+
+### Changed
+
+- `steam.Depot` carries `id`, `manifest` and `size` JSON tags.
+
 ## [0.2.0] - 2026-11-02
 
 ### Added
@@ -27,6 +33,7 @@ Notable changes to `go-gamelocator`. The format follows
   Heroic's Wine prefixes.
 - `gamelocator.GameDir`: confirm an install by a marker file at its root or in its `game` folder.
 
-[Unreleased]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Rethunk-Tech/go-gamelocator/releases/tag/v0.1.0
