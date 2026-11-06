@@ -4,6 +4,8 @@ package bottles
 import (
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
@@ -61,4 +63,51 @@ func Of(dir string) string {
 			return ""
 		}
 	}
+}
+
+// UserDir is the Windows profile folder inside a bottle: its one real user's, else Wine's default steamuser.
+func UserDir(bottle string) string {
+	users := filepath.Join(bottle, "drive_c", "users")
+	if entries, err := os.ReadDir(users); err == nil {
+		for _, e := range entries {
+			if e.IsDir() && e.Name() != "Public" {
+				return filepath.Join(users, e.Name())
+			}
+		}
+	}
+	return filepath.Join(users, "steamuser")
+}
+
+var reName = regexp.MustCompile(`(?m)^Name:\s*(.+?)\s*$`)
+
+// Name is the name bottles-cli knows the bottle by: bottle.yml's Name, else its folder's name.
+func Name(bottle string) string {
+	if b, err := safefs.ReadFile(filepath.Join(bottle, "bottle.yml")); err == nil {
+		if m := reName.FindSubmatch(b); m != nil {
+			if n := strings.Trim(string(m[1]), `"'`); n != "" {
+				return n
+			}
+		}
+	}
+	return filepath.Base(bottle)
+}
+
+// IsFlatpak reports whether the bottle belongs to Flatpak Bottles, whose CLI is not on the host's PATH.
+func IsFlatpak(bottle string) bool {
+	return strings.Contains(filepath.ToSlash(bottle), "/.var/app/com.usebottles.bottles/")
+}
+
+// RunArgv is the command line that runs exe with args inside bottle through bottles-cli, or through flatpak run for
+// a Flatpak bottle.
+func RunArgv(bottle, exe string, args ...string) []string {
+	argv := []string{"bottles-cli"}
+	if IsFlatpak(bottle) {
+		argv = []string{"flatpak", "run", "--command=bottles-cli", "com.usebottles.bottles"}
+	}
+	argv = append(argv, "run", "-b", Name(bottle), "-e", exe)
+	if len(args) > 0 {
+		argv = append(argv, "--")
+		argv = append(argv, args...)
+	}
+	return argv
 }

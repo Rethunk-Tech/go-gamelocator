@@ -81,3 +81,36 @@ func TestDirsFollowCustomXDGData(t *testing.T) {
 		t.Fatalf("the user's folders come first: %v", got)
 	}
 }
+
+func TestNameUserDirAndRunArgv(t *testing.T) {
+	bottle := filepath.Join(t.TempDir(), "folder")
+	if got := Name(bottle); got != "folder" {
+		t.Fatalf("no bottle.yml: %q", got)
+	}
+	if got, want := UserDir(bottle), filepath.Join(bottle, "drive_c", "users", "steamuser"); got != want {
+		t.Fatalf("default user = %q, want %q", got, want)
+	}
+	if err := os.MkdirAll(filepath.Join(bottle, "drive_c", "users", "Public"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(bottle, "drive_c", "users", "alice"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(bottle, "bottle.yml"), []byte("Path: x\nName: \"My Games\"\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := Name(bottle); got != "My Games" {
+		t.Fatalf("Name = %q", got)
+	}
+	if got, want := UserDir(bottle), filepath.Join(bottle, "drive_c", "users", "alice"); got != want {
+		t.Fatalf("UserDir = %q, want %q", got, want)
+	}
+	want := []string{"bottles-cli", "run", "-b", "My Games", "-e", "a.exe", "--", "-x"}
+	if got := RunArgv(bottle, "a.exe", "-x"); !slices.Equal(got, want) {
+		t.Fatalf("RunArgv = %v", got)
+	}
+	flat := "/home/u/.var/app/com.usebottles.bottles/data/bottles/bottles/B"
+	if got := RunArgv(flat, "a.exe"); !slices.Equal(got, []string{"flatpak", "run", "--command=bottles-cli", "com.usebottles.bottles", "run", "-b", "B", "-e", "a.exe"}) {
+		t.Fatalf("flatpak RunArgv = %v", got)
+	}
+}

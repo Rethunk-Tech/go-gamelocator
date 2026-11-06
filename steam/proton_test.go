@@ -107,3 +107,33 @@ func TestCompatToolIsTheExactEntryWithNoDefaultFallback(t *testing.T) {
 		t.Fatalf("an app with no entry must not take the default: %q", got)
 	}
 }
+
+// Steam keeps compatdata in the library of the app's default install: the game's own library wins, then any library
+// of any root, and with none the game's own is where Steam will create it.
+func TestCompatDataSearchesEveryLibrary(t *testing.T) {
+	base := t.TempDir()
+	root := filepath.Join(base, "steam")
+	second := filepath.Join(base, "second")
+	own := filepath.Join(base, "own", "steamapps")
+	writeAt(t, filepath.Join(root, "steamapps", "libraryfolders.vdf"),
+		[]byte(`"libraryfolders" { "0" { "path" "`+root+`" } "1" { "path" "`+second+`" } }`))
+	st := Steam{Root: root}
+
+	if got, want := CompatData("42", own, st), filepath.Join(own, "compatdata", "42"); got != want {
+		t.Fatalf("none yet = %q, want %q", got, want)
+	}
+	writeAt(t, filepath.Join(second, "steamapps", "compatdata", "42", "config_info"), []byte("x"))
+	if got, want := CompatData("42", own, st), filepath.Join(second, "steamapps", "compatdata", "42"); got != want {
+		t.Fatalf("other library = %q, want %q", got, want)
+	}
+	writeAt(t, filepath.Join(own, "compatdata", "42", "config_info"), []byte("x"))
+	if got, want := CompatData("42", own, st), filepath.Join(own, "compatdata", "42"); got != want {
+		t.Fatalf("own library first = %q, want %q", got, want)
+	}
+	if _, ok := st.CompatData("../x"); ok {
+		t.Fatal("an id that escapes the folder")
+	}
+	if got, want := ProtonUserDir("/c"), filepath.Join("/c", "pfx", "drive_c", "users", "steamuser"); got != want {
+		t.Fatalf("ProtonUserDir = %q", got)
+	}
+}

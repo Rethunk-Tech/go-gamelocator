@@ -163,3 +163,40 @@ func (s Steam) CompatTool(appID string) string {
 	name, _ := vdfKey(node, "name").(string)
 	return name
 }
+
+// CompatData is the compatdata folder of appID (the Proton prefix's parent). Steam keeps it in the library of the
+// app's default install, which need not be the one holding the game files, so it looks in the library at steamapps
+// first, then in the root and every library of each of steams. When no library has the folder yet it returns the one
+// in steamapps, where Steam will create it.
+func CompatData(appID, steamapps string, steams ...Steam) string {
+	own := filepath.Join(steamapps, "compatdata", appID)
+	if !filepath.IsLocal(appID) || safefs.IsDir(own) {
+		return own
+	}
+	for _, st := range steams {
+		if c, ok := st.CompatData(appID); ok {
+			return c
+		}
+	}
+	return own
+}
+
+// CompatData is appID's compatdata folder in s's root or one of its libraries; ok is false when none has it.
+func (s Steam) CompatData(appID string) (string, bool) {
+	if !filepath.IsLocal(appID) {
+		return "", false
+	}
+	libs, _ := s.Libraries()
+	for _, lib := range append([]string{s.Root}, libs...) {
+		if c := filepath.Join(lib, "steamapps", "compatdata", appID); safefs.IsDir(c) {
+			return c, true
+		}
+	}
+	return "", false
+}
+
+// ProtonUserDir is the Windows profile folder Proton creates inside a compatdata folder (or any folder holding a
+// Proton prefix as pfx/).
+func ProtonUserDir(compatdata string) string {
+	return filepath.Join(compatdata, "pfx", "drive_c", "users", "steamuser")
+}

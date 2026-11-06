@@ -6,6 +6,11 @@ Notable changes to `go-gamelocator`. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `steam`: `CompatData` and `Steam.CompatData` find an app's compatdata folder in any library, `ProtonUserDir` names the Proton prefix's Windows profile, and `StoreHero` asks Steam's store for an app's hero image URL.
+- `bottles`: `Name`, `UserDir`, `IsFlatpak` and `RunArgv` read a bottle's name and Windows profile and build the `bottles-cli run` command line.
+
 ## [0.3.0] - 2026-11-02
 
 ### Changed

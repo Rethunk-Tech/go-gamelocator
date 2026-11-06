@@ -42,6 +42,8 @@ github.com/OpenPeeDeeP/depguard/v2 v2.2.1 h1:vckeWVESWp6Qog7UZSARNqfu/cZqvki8zsu
 github.com/OpenPeeDeeP/depguard/v2 v2.2.1/go.mod h1:q4DKzC4UcVaAvcfd41CZh0PWpGgzrVxUYBlgKNGquUo=
 github.com/Rethunk-Tech/go-desktopenv v0.4.0 h1:XPYnAKxjOml0Z4Nv4l4A/NxFDqFMv4DBH8t6w0mqHAI=
 github.com/Rethunk-Tech/go-desktopenv v0.4.0/go.mod h1:r/4DNFhqgHjn3T7bOitXEkqQEvbZw0RaEfyAI/0BHoM=
+github.com/Rethunk-Tech/go-httpkit v0.1.0 h1:SvoqwGRNV1p5C35bIyNmVdcjkyX+9uYq+kDbXhmPXB0=
+github.com/Rethunk-Tech/go-httpkit v0.1.0/go.mod h1:2UlPyOxq3gUFVrTKol+2lP9r0i7pC15pRPF3jtF8/dk=
 github.com/Rethunk-Tech/go-safefs v0.6.0 h1:Z8s36Qrbl/tCMAKKCGyS+YmWF4MXoskscepMfWYjY1o=
 github.com/Rethunk-Tech/go-safefs v0.6.0/go.mod h1:OlJOS+MRiL1we4bZjwI59SfZ1P2w7htlhxdP0ZuVBgU=
 github.com/alecthomas/assert/v2 v2.11.0 h1:2Q9r3ki8+JYXvGsDyBXwH3LcJ+WK5D0gc5E8vS6K3D0=
