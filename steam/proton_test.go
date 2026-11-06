@@ -3,6 +3,7 @@ package steam
 import (
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -108,6 +109,8 @@ func TestCompatToolIsTheExactEntryWithNoDefaultFallback(t *testing.T) {
 	}
 }
 
+func vdfEscape(p string) string { return strings.ReplaceAll(p, `\`, `\\`) }
+
 // Steam keeps compatdata in the library of the app's default install: the game's own library wins, then any library
 // of any root, and with none the game's own is where Steam will create it.
 func TestCompatDataSearchesEveryLibrary(t *testing.T) {
@@ -116,7 +119,7 @@ func TestCompatDataSearchesEveryLibrary(t *testing.T) {
 	second := filepath.Join(base, "second")
 	own := filepath.Join(base, "own", "steamapps")
 	writeAt(t, filepath.Join(root, "steamapps", "libraryfolders.vdf"),
-		[]byte(`"libraryfolders" { "0" { "path" "`+root+`" } "1" { "path" "`+second+`" } }`))
+		[]byte(`"libraryfolders" { "0" { "path" "`+vdfEscape(root)+`" } "1" { "path" "`+vdfEscape(second)+`" } }`))
 	st := Steam{Root: root}
 
 	if got, want := CompatData("42", own, st), filepath.Join(own, "compatdata", "42"); got != want {
