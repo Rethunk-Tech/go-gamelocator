@@ -75,45 +75,11 @@ func setLaunchOptions(b []byte, appID string, merge func(old string) string) ([]
 	if err != nil {
 		return nil, "", err
 	}
-	want := []string{"userlocalconfigstore", "software", "valve", "steam", "apps"}
-	var path []string
-	var pending string
-	appsClose, appOpen, appClose := -1, -1, -1
-	var optVal *vdfToken
-	inApp := func() bool { return len(path) == len(want)+1 && pathIs(path, want) && path[len(want)] == appID }
-	for i := 0; i < len(toks); i++ {
-		t := toks[i]
-		switch t.kind {
-		case 's':
-			if pending == "" {
-				pending = t.text
-				if i+1 < len(toks) && toks[i+1].kind == 's' {
-					if inApp() && strings.EqualFold(t.text, "LaunchOptions") {
-						optVal = &toks[i+1]
-					}
-					i++
-					pending = ""
-				}
-			}
-		case '{':
-			path = append(path, strings.ToLower(pending))
-			if pathIs(path, want) && len(path) == len(want)+1 && pending == appID {
-				appOpen = t.end
-			}
-			pending = ""
-		case '}':
-			if len(path) == 0 {
-				return nil, "", errors.New("unbalanced braces in VDF")
-			}
-			if inApp() {
-				appClose = t.start
-			}
-			if len(path) == len(want) && pathIs(path, want) {
-				appsClose = t.start
-			}
-			path = path[:len(path)-1]
-		}
+	loc, err := locateLaunchOptions(toks, appID)
+	if err != nil {
+		return nil, "", err
 	}
+	appsClose, appOpen, appClose, optVal := loc.appsClose, loc.appOpen, loc.appClose, loc.optVal
 	switch {
 	case optVal != nil:
 		value := merge(optVal.text)
@@ -127,6 +93,86 @@ func setLaunchOptions(b []byte, appID string, merge func(old string) string) ([]
 		return splice(b, appsClose, appsClose, block), value, nil
 	}
 	return nil, "", ErrNoAppsSection
+}
+
+// launchLoc is where setLaunchOptions edits: the byte ranges of the apps block, the app's block and its LaunchOptions
+// value, with -1 or nil for any the file lacks.
+type launchLoc struct {
+	appsClose, appOpen, appClose int
+	optVal                       *vdfToken
+}
+
+// launchOptionsWant is the key path of the apps block holding one block per app id.
+var launchOptionsWant = []string{"userlocalconfigstore", "software", "valve", "steam", "apps"}
+
+// vdfPath tracks the key path while locateLaunchOptions walks the tokens.
+type vdfPath struct {
+	path    []string
+	pending string
+	appID   string
+	loc     launchLoc
+}
+
+func (p *vdfPath) inApp() bool {
+	want := launchOptionsWant
+	return len(p.path) == len(want)+1 && pathIs(p.path, want) && p.path[len(want)] == p.appID
+}
+
+// locateLaunchOptions walks toks tracking the key path and finds the edit sites for appID.
+func locateLaunchOptions(toks []vdfToken, appID string) (launchLoc, error) {
+	p := &vdfPath{appID: appID, loc: launchLoc{appsClose: -1, appOpen: -1, appClose: -1}}
+	for i := 0; i < len(toks); i++ {
+		t := toks[i]
+		switch t.kind {
+		case 's':
+			if p.pending == "" {
+				i += p.key(toks, i)
+			}
+		case '{':
+			p.open(t)
+		case '}':
+			if len(p.path) == 0 {
+				return launchLoc{}, errors.New("unbalanced braces in VDF")
+			}
+			p.close(t)
+		}
+	}
+	return p.loc, nil
+}
+
+// key handles the string token at toks[i], returning how many following tokens it consumed: a key with a string value
+// is a pair, and the LaunchOptions pair of the app is the value to replace.
+func (p *vdfPath) key(toks []vdfToken, i int) int {
+	t := toks[i]
+	p.pending = t.text
+	if i+1 < len(toks) && toks[i+1].kind == 's' {
+		if p.inApp() && strings.EqualFold(t.text, "LaunchOptions") {
+			p.loc.optVal = &toks[i+1]
+		}
+		p.pending = ""
+		return 1
+	}
+	return 0
+}
+
+func (p *vdfPath) open(t vdfToken) {
+	want := launchOptionsWant
+	p.path = append(p.path, strings.ToLower(p.pending))
+	if pathIs(p.path, want) && len(p.path) == len(want)+1 && p.pending == p.appID {
+		p.loc.appOpen = t.end
+	}
+	p.pending = ""
+}
+
+func (p *vdfPath) close(t vdfToken) {
+	want := launchOptionsWant
+	if p.inApp() {
+		p.loc.appClose = t.start
+	}
+	if len(p.path) == len(want) && pathIs(p.path, want) {
+		p.loc.appsClose = t.start
+	}
+	p.path = p.path[:len(p.path)-1]
 }
 
 func pathIs(path, want []string) bool {
