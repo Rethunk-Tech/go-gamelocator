@@ -9,6 +9,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/Rethunk-Tech/go-gamelocator/internal/readcap"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -136,7 +137,7 @@ func LibraryOf(dir string) (steamapps string, ok bool) {
 // PrefixVersion is the first line of the Proton prefix folder's config_info (the tool version that created it), or ""
 // when the file is absent or its first line is blank. compatdata is the app's folder under steamapps/compatdata.
 func PrefixVersion(compatdata string) string {
-	b, err := safefs.ReadFile(filepath.Join(compatdata, "config_info"))
+	b, err := readcap.File(filepath.Join(compatdata, "config_info"), readcap.Config)
 	if err != nil {
 		return ""
 	}

@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-gamelocator/internal/readcap"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -17,7 +18,7 @@ func Prefix(cfg, appName string) string {
 	if !filepath.IsLocal(appName) || strings.ContainsAny(appName, `/\`) {
 		return ""
 	}
-	b, err := safefs.ReadFile(filepath.Join(cfg, "GamesConfig", appName+".json"))
+	b, err := readcap.File(filepath.Join(cfg, "GamesConfig", appName+".json"), readcap.Config)
 	if err != nil {
 		return ""
 	}

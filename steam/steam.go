@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -97,9 +98,19 @@ func Locate(home string, extra ...string) (Steam, Status) {
 	return Steam{}, NotFound
 }
 
-// OverrideCommand is the exact flatpak override that grants Steam read-only access to dataDir.
+// OverrideCommand is the flatpak override that grants Steam read-only access to dataDir, as a line for a POSIX shell:
+// a path with a space or shell syntax is single-quoted, so pasting it grants that folder and runs nothing.
 func OverrideCommand(dataDir string) string {
-	return "flatpak override --user --filesystem=" + dataDir + ":ro " + FlatpakID
+	return "flatpak override --user " + shellQuote("--filesystem="+dataDir+":ro") + " " + FlatpakID
+}
+
+var shellSafe = regexp.MustCompile(`^[A-Za-z0-9_@%+=:,./-]+$`)
+
+func shellQuote(s string) string {
+	if shellSafe.MatchString(s) {
+		return s
+	}
+	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
 }
 
 // HasFilesystem reports whether `flatpak override --user --show` grants dataDir.
@@ -158,7 +169,7 @@ func (s Steam) Libraries() ([]string, error) {
 	var paths []string
 	for _, entry := range folders {
 		if e, ok := entry.(map[string]any); ok {
-			if p, ok := e["path"].(string); ok {
+			if p, ok := e["path"].(string); ok && filepath.IsAbs(p) {
 				paths = append(paths, p)
 			}
 		}
@@ -182,7 +193,7 @@ func (s Steam) InstallDir(appID string) (string, error) {
 		}
 		state, _ := m["AppState"].(map[string]any)
 		name, _ := state["installdir"].(string)
-		if name == "" {
+		if name == "" || !filepath.IsLocal(name) {
 			continue
 		}
 		dir := filepath.Join(lib, "steamapps", "common", name)

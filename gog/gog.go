@@ -10,7 +10,7 @@ import (
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	gamelocator "github.com/Rethunk-Tech/go-gamelocator"
 	"github.com/Rethunk-Tech/go-gamelocator/heroic"
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-gamelocator/internal/readcap"
 )
 
 // Source is the launcher a GOG copy came from.
@@ -119,7 +119,7 @@ func MinigalaxyConfigDirs(home string) []string {
 func MinigalaxyInstallDirs(home string, custom ...string) []string {
 	out := slices.Clone(custom)
 	for _, cfg := range MinigalaxyConfigDirs(home) {
-		b, err := safefs.ReadFile(filepath.Join(cfg, "config.json"))
+		b, err := readcap.File(filepath.Join(cfg, "config.json"), readcap.Config)
 		if err != nil {
 			continue
 		}

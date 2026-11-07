@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 
+	"github.com/Rethunk-Tech/go-gamelocator/internal/readcap"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -44,7 +45,7 @@ func backupBeforeEdit(path, suffix string, perm os.FileMode) error {
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
-	body, err := safefs.ReadFile(path)
+	body, err := readcap.File(path, readcap.Config)
 	if errors.Is(err, os.ErrNotExist) {
 		// An account that never had the file (no non-Steam game yet) has nothing to restore.
 		return nil

@@ -11,7 +11,17 @@ Notable changes to `go-gamelocator`. The format follows
 - `steam`: `CompatData` and `Steam.CompatData` find an app's compatdata folder in any library, `ProtonUserDir` names the Proton prefix's Windows profile, and `StoreHero` asks Steam's store for an app's hero image URL.
 - `bottles`: `Name`, `UserDir`, `IsFlatpak` and `RunArgv` read a bottle's name and Windows profile and build the `bottles-cli run` command line.
 
-## [0.3.0] - 2026-11-02
+### Changed
+
+- `GameDir` returns "" for a relative `dir`, and `Steam.Libraries` skips a relative library path.
+
+### Fixed
+
+- `AddShortcut` and `RemoveShortcuts` refuse a shortcut field holding a NUL byte (`steam.ErrNUL`) instead of writing a `shortcuts.vdf` Steam cannot read.
+- `steam.OverrideCommand` single-quotes a path with a space or shell syntax.
+- `Steam.InstallDir` skips an `installdir` that leaves `steamapps/common`.
+- Every launcher and Steam file read is capped (16 MiB, images 32 MiB) and refuses a pipe or device; a binary VDF string is capped at 64 KiB; the `.ico` entry bounds cannot wrap on a 32-bit build.
+ - 2026-11-02
 
 ### Changed
 

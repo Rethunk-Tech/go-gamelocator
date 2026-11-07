@@ -27,7 +27,9 @@ func FuzzShortcutsVDF(f *testing.F) {
 		}
 		consumed := len(b) - r.Buffered() - src.Len()
 		var out bytes.Buffer
-		writeVDFMap(&out, nodes)
+		if err := writeVDFMap(&out, nodes); err != nil {
+			t.Fatal(err)
+		}
 		if !bytes.Equal(out.Bytes(), b[:consumed]) {
 			t.Fatalf("re-encoded %x, consumed %x", out.Bytes(), b[:consumed])
 		}
@@ -70,7 +72,9 @@ func FuzzAddRemoveShortcut(f *testing.F) {
 			want[0].Child[i].Key = strconv.Itoa(i)
 		}
 		var buf bytes.Buffer
-		writeVDFMap(&buf, want)
+		if err := writeVDFMap(&buf, want); err != nil {
+			t.Fatal(err)
+		}
 		if !bytes.Equal(after, buf.Bytes()) {
 			t.Fatalf("after remove %x, want %x", after, buf.Bytes())
 		}

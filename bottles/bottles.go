@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
+	"github.com/Rethunk-Tech/go-gamelocator/internal/readcap"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -82,7 +83,7 @@ var reName = regexp.MustCompile(`(?m)^Name:\s*(.+?)\s*$`)
 
 // Name is the name bottles-cli knows the bottle by: bottle.yml's Name, else its folder's name.
 func Name(bottle string) string {
-	if b, err := safefs.ReadFile(filepath.Join(bottle, "bottle.yml")); err == nil {
+	if b, err := readcap.File(filepath.Join(bottle, "bottle.yml"), readcap.Config); err == nil {
 		if m := reName.FindSubmatch(b); m != nil {
 			if n := strings.Trim(string(m[1]), `"'`); n != "" {
 				return n

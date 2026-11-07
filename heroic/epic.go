@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/Rethunk-Tech/go-gamelocator/epic"
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-gamelocator/internal/readcap"
 )
 
 // EpicList is the list of the Epic games Heroic installed through legendary, below a Heroic config folder.
@@ -15,7 +15,7 @@ func EpicList(cfg string) string {
 
 // EpicInstalls reads the list in the config folder cfg; an unreadable list holds nothing.
 func EpicInstalls(cfg string) []epic.Install {
-	b, err := safefs.ReadFile(EpicList(cfg))
+	b, err := readcap.File(EpicList(cfg), readcap.Config)
 	if err != nil {
 		return nil
 	}

@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-gamelocator/internal/readcap"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -36,13 +37,30 @@ type vdfNode struct {
 	Child []vdfNode
 }
 
+// maxCString bounds one key or string of a binary VDF: a real value is a path or a launch line, and an unterminated
+// run in a hostile file would otherwise grow with the file.
+const maxCString = 64 << 10
+
 func readCString(r *bufio.Reader) (string, error) {
-	s, err := r.ReadString(0)
-	if err != nil {
-		return "", err
+	var b []byte
+	for {
+		c, err := r.ReadByte()
+		if err != nil {
+			return "", err
+		}
+		if c == 0 {
+			return string(b), nil
+		}
+		if len(b) >= maxCString {
+			return "", fmt.Errorf("binary VDF string is longer than %d bytes", maxCString)
+		}
+		b = append(b, c)
 	}
-	return s[:len(s)-1], nil
 }
+
+// ErrNUL is returned for a shortcut field holding a NUL byte, which would end its string early in shortcuts.vdf and
+// corrupt every entry after it.
+var ErrNUL = errors.New("a shortcut field holds a NUL byte")
 
 // maxBinaryVDFDepth bounds readVDFMap's recursion: a real shortcuts.vdf nests 3 or 4 deep, and a hostile one
 // nesting millions deep would overflow the stack, which cannot be recovered.
@@ -91,14 +109,19 @@ func readVDFLevel(r *bufio.Reader, depth int) ([]vdfNode, error) {
 	}
 }
 
-func writeVDFMap(w *bytes.Buffer, nodes []vdfNode) {
+func writeVDFMap(w *bytes.Buffer, nodes []vdfNode) error {
 	for _, n := range nodes {
+		if strings.IndexByte(n.Key, 0) >= 0 || strings.IndexByte(n.Str, 0) >= 0 {
+			return ErrNUL
+		}
 		w.WriteByte(n.Kind)
 		w.WriteString(n.Key)
 		w.WriteByte(0)
 		switch n.Kind {
 		case vdfMap:
-			writeVDFMap(w, n.Child)
+			if err := writeVDFMap(w, n.Child); err != nil {
+				return err
+			}
 		case vdfString:
 			w.WriteString(n.Str)
 			w.WriteByte(0)
@@ -109,6 +132,7 @@ func writeVDFMap(w *bytes.Buffer, nodes []vdfNode) {
 		}
 	}
 	w.WriteByte(vdfEnd)
+	return nil
 }
 
 // Shortcut is a non-Steam game entry in the Steam library.
@@ -236,7 +260,9 @@ func addShortcut(body []byte, sc Shortcut) ([]byte, uint32, AddResult, error) {
 		root[0].Child = append(root[0].Child, sc.node(i))
 	}
 	var buf bytes.Buffer
-	writeVDFMap(&buf, root)
+	if err := writeVDFMap(&buf, root); err != nil {
+		return nil, 0, "", err
+	}
 	return buf.Bytes(), appIDOf(root[0].Child[i]), res, nil
 }
 
@@ -251,7 +277,7 @@ func (s Steam) AddShortcut(sc Shortcut, o EditOptions) (AddResult, error) {
 		return "", err
 	}
 	path := filepath.Join(dir, "shortcuts.vdf")
-	body, err := safefs.ReadFile(path)
+	body, err := readcap.File(path, readcap.Config)
 	if err != nil && !errors.Is(err, os.ErrNotExist) && !errors.Is(err, io.EOF) {
 		return "", err
 	}
@@ -300,7 +326,9 @@ func removeShortcuts(body []byte, match func(exe, launchOptions string) bool) ([
 	}
 	root[0].Child = kept
 	var buf bytes.Buffer
-	writeVDFMap(&buf, root)
+	if err := writeVDFMap(&buf, root); err != nil {
+		return nil, 0, err
+	}
 	return buf.Bytes(), removed, nil
 }
 
@@ -322,7 +350,7 @@ func (s Steam) RemoveShortcuts(exe, optionsPrefix string, o EditOptions) (int, e
 	total := 0
 	var errs []error
 	for _, path := range files {
-		body, err := safefs.ReadFile(path)
+		body, err := readcap.File(path, readcap.Config)
 		if err != nil {
 			errs = append(errs, err)
 			continue

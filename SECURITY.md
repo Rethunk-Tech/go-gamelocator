@@ -18,7 +18,7 @@ Please do not open a public issue for a suspected vulnerability first.
   manifests), read by `Libraries`, `InstallDir`, `BuildID`, `CurrentAccount`, `LaunchOptions` and `CompatTool`. A file
   must not cause a fatal stack overflow or an allocation past 8 MiB: depth past 32 and size past the cap return errors.
 - **`shortcuts.vdf`**, binary, read by `AddShortcut` and `RemoveShortcuts`. Nesting past 16 returns `ErrTooDeep`, and
-  any accepted file re-encodes to the bytes read (fuzzed).
+  any accepted file re-encodes to the bytes read (fuzzed). A string over 64 KiB is refused, and a shortcut field with a NUL byte is refused on write.
 - **App ids and Heroic app names** are joined into paths: `HeroArt`, `ClientIcon` and `BuildID` refuse an id that
   would leave its folder (`filepath.IsLocal`), and `heroic.Prefix` refuses anything but one plain file name.
 - **Heroic, Epic, Minigalaxy and Lutris files** are plain JSON or YAML text; a malformed one yields no installs, never

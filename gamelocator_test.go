@@ -35,3 +35,16 @@ func TestGameDirFindsNestedMarkerAndGameSubfolder(t *testing.T) {
 		t.Fatalf("empty dir: %q", got)
 	}
 }
+
+func TestGameDirRefusesRelativeDirs(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+	if err := os.WriteFile(filepath.Join(root, "x.exe"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for _, dir := range []string{".", "", "sub/.."} {
+		if got := GameDir(dir, "x.exe"); got != "" {
+			t.Fatalf("GameDir(%q) = %q", dir, got)
+		}
+	}
+}

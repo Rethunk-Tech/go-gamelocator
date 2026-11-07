@@ -9,7 +9,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-gamelocator/internal/readcap"
 )
 
 // ListFile is the Epic Games Launcher's list of the games it installed and where. r2modman reads it in
@@ -36,7 +36,7 @@ func listDirs(goos string, env func(string) string, custom ...string) []string {
 
 // Installs reads the install list in dir; an unreadable list holds nothing.
 func Installs(dir string) []Install {
-	b, err := safefs.ReadFile(filepath.Join(dir, ListFile))
+	b, err := readcap.File(filepath.Join(dir, ListFile), readcap.Config)
 	if err != nil {
 		return nil
 	}

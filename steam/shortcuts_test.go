@@ -49,7 +49,9 @@ func TestAddShortcutUpdatesTheProfilesEntryInPlace(t *testing.T) {
 	}
 	other := Shortcut{Name: "P10", Exe: "/opt/launcher", StartDir: "/opt", LaunchOptions: "--play=stardew/p10 --steam-session"}.node(0)
 	var fixture bytes.Buffer
-	writeVDFMap(&fixture, []vdfNode{{Kind: vdfMap, Key: "shortcuts", Child: []vdfNode{other, old}}})
+	if err := writeVDFMap(&fixture, []vdfNode{{Kind: vdfMap, Key: "shortcuts", Child: []vdfNode{other, old}}}); err != nil {
+		t.Fatal(err)
+	}
 
 	sc := Shortcut{
 		Name: "Main (Stardew Valley)", Exe: "/opt/launcher", StartDir: "/opt",

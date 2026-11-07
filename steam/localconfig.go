@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-gamelocator/internal/readcap"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -205,7 +206,7 @@ func (s Steam) SetLaunchOptions(appID string, merge func(current string) string,
 		return "", err
 	}
 	path := filepath.Join(dir, "localconfig.vdf")
-	b, err := safefs.ReadFile(path)
+	b, err := readcap.File(path, readcap.Config)
 	if err != nil {
 		return "", err
 	}

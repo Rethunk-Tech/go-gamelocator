@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-gamelocator/internal/readcap"
 )
 
 // iconName is the content hash Steam names an app's icon by, in the library cache and in steam/games.
@@ -27,12 +27,12 @@ func (s Steam) ClientIcon(appID string) []byte {
 		if !iconName.MatchString(name) {
 			continue
 		}
-		if ico, err := safefs.ReadFile(filepath.Join(s.Root, "steam", "games", name[:40]+".ico")); err == nil {
+		if ico, err := readcap.File(filepath.Join(s.Root, "steam", "games", name[:40]+".ico"), readcap.Image); err == nil {
 			if png := largestPNG(ico); png != nil {
 				return png
 			}
 		}
-		if b, err := safefs.ReadFile(jpg); err == nil {
+		if b, err := readcap.File(jpg, readcap.Image); err == nil {
 			return b
 		}
 	}
@@ -58,7 +58,7 @@ func largestPNG(ico []byte) []byte {
 		}
 		size := int(binary.LittleEndian.Uint32(ico[at+8:]))
 		offset := int(binary.LittleEndian.Uint32(ico[at+12:]))
-		if offset < 0 || size <= 0 || offset+size > len(ico) || !bytes.HasPrefix(ico[offset:offset+size], pngMagic) {
+		if offset < 0 || size <= 0 || size > len(ico)-offset || !bytes.HasPrefix(ico[offset:offset+size], pngMagic) {
 			continue
 		}
 		if width > bestWidth {

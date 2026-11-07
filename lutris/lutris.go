@@ -11,8 +11,8 @@ import (
 
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	gamelocator "github.com/Rethunk-Tech/go-gamelocator"
+	"github.com/Rethunk-Tech/go-gamelocator/internal/readcap"
 	"github.com/Rethunk-Tech/go-gamelocator/internal/wineprefix"
-	"github.com/Rethunk-Tech/go-safefs"
 )
 
 var (
@@ -100,7 +100,7 @@ func ConfigDirs(home string, extra ...string) []string {
 }
 
 func (m matcher) installFromConfig(gamesDir, name string) (dir, text string, err error) {
-	b, err := safefs.ReadFile(filepath.Join(gamesDir, name))
+	b, err := readcap.File(filepath.Join(gamesDir, name), readcap.Config)
 	if err != nil {
 		return "", "", err
 	}

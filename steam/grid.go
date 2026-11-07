@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Rethunk-Tech/go-gamelocator/internal/readcap"
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
@@ -17,7 +18,7 @@ func writeGrid(dir string, appID uint32, source string) error {
 	if ext == "" {
 		return nil
 	}
-	body, err := safefs.ReadFile(source)
+	body, err := readcap.File(source, readcap.Image)
 	if err != nil {
 		return err
 	}

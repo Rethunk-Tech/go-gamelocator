@@ -6,10 +6,10 @@ import (
 	"github.com/Rethunk-Tech/go-safefs"
 )
 
-// GameDir is dir when it holds marker (a slash path below dir, so "Game/Bin/x.exe" works), else its "game" subfolder
+// GameDir is dir (which must be absolute: a relative one would be read against the process's working folder) when it holds marker (a slash path below dir, so "Game/Bin/x.exe" works), else its "game" subfolder
 // when that does (GOG's offline layout), else "".
 func GameDir(dir, marker string) string {
-	if dir == "" {
+	if !filepath.IsAbs(dir) {
 		return ""
 	}
 	dir = filepath.Clean(dir)

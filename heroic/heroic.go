@@ -10,7 +10,7 @@ import (
 	"slices"
 
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
-	"github.com/Rethunk-Tech/go-safefs"
+	"github.com/Rethunk-Tech/go-gamelocator/internal/readcap"
 )
 
 // ConfigDirs are Heroic's config folders, the ones in custom first: %APPDATA%\heroic on Windows, else native, Flatpak
@@ -36,7 +36,7 @@ type gogGame struct {
 // three shapes: a list, an object with "installed" or "games" lists, and an object keyed by product id.
 func GOGInstalls(cfg, productID string) []string {
 	path := filepath.Join(cfg, "gog_store", "installed.json")
-	b, err := safefs.ReadFile(path)
+	b, err := readcap.File(path, readcap.Config)
 	if err != nil {
 		return nil
 	}
