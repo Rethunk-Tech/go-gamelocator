@@ -18,7 +18,7 @@ import (
 	"github.com/Rethunk-Tech/go-desktopenv/userdirs"
 	"github.com/Rethunk-Tech/go-safefs"
 
-	"github.com/andygrunwald/vdf"
+	"github.com/Rethunk-Tech/vdf/v2"
 )
 
 // Status says whether a usable Steam was found.
@@ -316,10 +316,8 @@ func parseVDF(path string) (map[string]any, error) {
 	return m, nil
 }
 
-// parseTextVDF parses a text VDF body after the checks the parser needs to terminate. andygrunwald/vdf skips a comment
-// by reading to the next line ending and never stops at the end of input or at a NUL byte, which its reader reports as
-// the end of input, so a comment on the last line or a NUL inside one loops forever: NUL is refused and a line ending
-// is always present.
+// parseTextVDF parses a text VDF body after the checks that bound the parser: a NUL byte reads as the end of input,
+// so it would silently truncate the document, and the parser recurses once per nested section.
 func parseTextVDF(body []byte) (map[string]any, error) {
 	if bytes.IndexByte(body, 0) >= 0 {
 		return nil, errors.New("VDF contains a NUL byte")
@@ -331,7 +329,7 @@ func parseTextVDF(body []byte) (map[string]any, error) {
 	if depth > maxTextVDFDepth {
 		return nil, fmt.Errorf("nests deeper than %d levels: %w", maxTextVDFDepth, ErrTooDeep)
 	}
-	return vdf.NewParser(bytes.NewReader(append(bytes.Clone(body), '\n'))).Parse()
+	return vdf.NewParser(bytes.NewReader(body)).Parse()
 }
 
 // textVDFDepth is the deepest run of unclosed braces over the tokens the parser reads, so a comment or a quoted

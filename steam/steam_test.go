@@ -235,6 +235,10 @@ func TestParseVDFRefusesWhatIsTooLargeOrTooDeep(t *testing.T) {
 			t.Fatalf("%s: %v", name, err)
 		}
 	}
+	// A comment on the last line, with no line ending after it, must end the parse rather than loop.
+	if _, err := parseVDF(write("tail.vdf", []byte(`"k" { "v" "1" }`+"\n// end"))); err != nil {
+		t.Fatalf("comment at end of input: %v", err)
+	}
 	if _, err := parseVDF(write("ok.vdf", []byte(quoted))); err != nil {
 		t.Fatalf("ok: %v", err)
 	}

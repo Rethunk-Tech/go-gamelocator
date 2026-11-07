@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/andygrunwald/vdf"
+	"github.com/Rethunk-Tech/vdf/v2"
 )
 
 const localConfig = `"UserLocalConfigStore"

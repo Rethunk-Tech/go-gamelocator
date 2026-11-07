@@ -14,7 +14,7 @@ require (
 	github.com/Rethunk-Tech/go-desktopenv v0.6.0
 	github.com/Rethunk-Tech/go-httpkit v0.1.0
 	github.com/Rethunk-Tech/go-safefs v0.7.1
-	github.com/andygrunwald/vdf v1.1.0
+	github.com/Rethunk-Tech/vdf/v2 v2.1.0
 	golang.org/x/sys v0.49.0
 )
 
