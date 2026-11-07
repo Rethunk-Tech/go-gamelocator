@@ -177,8 +177,11 @@ func (s Steam) Libraries() ([]string, error) {
 	return paths, nil
 }
 
-// InstallDir returns the install directory of appID, or "" when it is not installed.
+// InstallDir returns the install directory of appID, or "" when it is not installed or appID is not numeric.
 func (s Steam) InstallDir(appID string) (string, error) {
+	if !numericID(appID) {
+		return "", nil
+	}
 	libs, err := s.Libraries()
 	if err != nil {
 		return "", err
@@ -207,7 +210,7 @@ func (s Steam) InstallDir(appID string) (string, error) {
 // BuildID is the Steam build of appID installed in dir (a folder of its library's steamapps/common), the version Steam
 // itself tracks; "" when dir is not in a Steam library or the app has no manifest.
 func BuildID(dir, appID string) string {
-	if !filepath.IsLocal(appID) {
+	if !numericID(appID) {
 		return ""
 	}
 	apps := filepath.Dir(filepath.Dir(dir))

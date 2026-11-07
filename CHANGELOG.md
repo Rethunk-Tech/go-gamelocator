@@ -6,6 +6,10 @@ Notable changes to `go-gamelocator`. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- `steam.DepotDownloadDir`, `Steam.InstallDir` and `steam.BuildID` refuse an app or depot id that is not decimal digits, returning "" instead of building a path from it.
+
 ### Added
 
 - `steam`: `CompatData` and `Steam.CompatData` find an app's compatdata folder in any library, `ProtonUserDir` names the Proton prefix's Windows profile, and `StoreHero` asks Steam's store for an app's hero image URL.

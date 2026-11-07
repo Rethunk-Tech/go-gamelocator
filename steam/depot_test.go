@@ -47,3 +47,21 @@ func TestDepotJSONNames(t *testing.T) {
 		t.Fatalf("json = %s, %v", b, err)
 	}
 }
+
+func TestSteamIDsThatAreNotNumbersAreRefused(t *testing.T) {
+	t.Parallel()
+	for _, id := range []string{"", "..", "../x", "12a", "1/2", `1\2`, "-1", " 1", "123456789012345678901"} {
+		if got := DepotDownloadDir("lib", id, "1001"); got != "" {
+			t.Errorf("DepotDownloadDir(app %q) = %q", id, got)
+		}
+		if got := DepotDownloadDir("lib", "1000", id); got != "" {
+			t.Errorf("DepotDownloadDir(depot %q) = %q", id, got)
+		}
+		if got, err := (Steam{Root: t.TempDir()}).InstallDir(id); got != "" || err != nil {
+			t.Errorf("InstallDir(%q) = %q, %v", id, got, err)
+		}
+		if got := BuildID(t.TempDir(), id); got != "" {
+			t.Errorf("BuildID(%q) = %q", id, got)
+		}
+	}
+}

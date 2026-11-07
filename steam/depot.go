@@ -49,7 +49,24 @@ func InstalledDepots(library, appID string) ([]Depot, error) {
 	return out, nil
 }
 
-// DepotDownloadDir is the folder Steam's console command download_depot writes depotID of appID to, in library.
+// numericID reports whether id is a Steam app or depot id: decimal digits only, so it cannot name a path.
+func numericID(id string) bool {
+	if id == "" || len(id) > 20 {
+		return false
+	}
+	for _, c := range id {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+// DepotDownloadDir is the folder Steam's console command download_depot writes depotID of appID to, in library; ""
+// when either id is not numeric.
 func DepotDownloadDir(library, appID, depotID string) string {
+	if !numericID(appID) || !numericID(depotID) {
+		return ""
+	}
 	return filepath.Join(library, "steamapps", "content", "app_"+appID, "depot_"+depotID)
 }
