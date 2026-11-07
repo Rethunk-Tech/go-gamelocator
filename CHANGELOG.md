@@ -6,9 +6,7 @@ Notable changes to `go-gamelocator`. The format follows
 
 ## [Unreleased]
 
-### Fixed
-
-- `steam.DepotDownloadDir`, `Steam.InstallDir` and `steam.BuildID` refuse an app or depot id that is not decimal digits, returning "" instead of building a path from it.
+## [0.4.0] - 2026-11-07
 
 ### Added
 
@@ -17,15 +15,19 @@ Notable changes to `go-gamelocator`. The format follows
 
 ### Changed
 
+- Text VDF is parsed by `github.com/Rethunk-Tech/vdf/v2`, a new dependency.
 - `GameDir` returns "" for a relative `dir`, and `Steam.Libraries` skips a relative library path.
 
 ### Fixed
 
+- `steam.DepotDownloadDir`, `Steam.InstallDir` and `steam.BuildID` refuse an app or depot id that is not decimal digits, returning "" instead of building a path from it.
 - `AddShortcut` and `RemoveShortcuts` refuse a shortcut field holding a NUL byte (`steam.ErrNUL`) instead of writing a `shortcuts.vdf` Steam cannot read.
 - `steam.OverrideCommand` single-quotes a path with a space or shell syntax.
 - `Steam.InstallDir` skips an `installdir` that leaves `steamapps/common`.
 - Every launcher and Steam file read is capped (16 MiB, images 32 MiB) and refuses a pipe or device; a binary VDF string is capped at 64 KiB; the `.ico` entry bounds cannot wrap on a 32-bit build.
- - 2026-11-02
+- A text VDF whose last line is a comment parses instead of hanging.
+
+## [0.3.0] - 2026-11-02
 
 ### Changed
 
@@ -52,7 +54,8 @@ Notable changes to `go-gamelocator`. The format follows
   Heroic's Wine prefixes.
 - `gamelocator.GameDir`: confirm an install by a marker file at its root or in its `game` folder.
 
-[Unreleased]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Rethunk-Tech/go-gamelocator/releases/tag/v0.1.0
