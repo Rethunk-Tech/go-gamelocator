@@ -10,8 +10,6 @@ import (
 	"testing"
 
 	"github.com/Rethunk-Tech/go-safefs"
-
-	"github.com/andygrunwald/vdf"
 )
 
 // writeAt writes body at path, creating its folders.
@@ -260,12 +258,9 @@ func TestLocateAllEmptyHomeIsTheUsersHome(t *testing.T) {
 func FuzzTextVDF(f *testing.F) {
 	f.Add([]byte("// \"\n" + strings.Repeat(`"a"{`, 40)))
 	f.Add([]byte(`"k" { "v" "1" }`))
+	f.Add([]byte("\"k\" { }\n// last line, no line ending"))
 	f.Fuzz(func(t *testing.T, b []byte) {
-		d, err := textVDFDepth(b)
-		if err != nil || d > maxTextVDFDepth {
-			return
-		}
-		if m, err := vdf.NewParser(bytes.NewReader(b)).Parse(); err == nil && m == nil {
+		if m, err := parseTextVDF(b); err == nil && m == nil {
 			t.Fatal("nil map")
 		}
 	})

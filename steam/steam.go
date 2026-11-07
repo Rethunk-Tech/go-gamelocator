@@ -309,18 +309,29 @@ func parseVDF(path string) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	depth, err := textVDFDepth(body)
-	if err != nil {
-		return nil, fmt.Errorf("parse %s: %w", filepath.Base(path), err)
-	}
-	if depth > maxTextVDFDepth {
-		return nil, fmt.Errorf("%s nests deeper than %d levels: %w", filepath.Base(path), maxTextVDFDepth, ErrTooDeep)
-	}
-	m, err := vdf.NewParser(bytes.NewReader(body)).Parse()
+	m, err := parseTextVDF(body)
 	if err != nil {
 		return nil, fmt.Errorf("parse %s: %w", filepath.Base(path), err)
 	}
 	return m, nil
+}
+
+// parseTextVDF parses a text VDF body after the checks the parser needs to terminate. andygrunwald/vdf skips a comment
+// by reading to the next line ending and never stops at the end of input or at a NUL byte, which its reader reports as
+// the end of input, so a comment on the last line or a NUL inside one loops forever: NUL is refused and a line ending
+// is always present.
+func parseTextVDF(body []byte) (map[string]any, error) {
+	if bytes.IndexByte(body, 0) >= 0 {
+		return nil, errors.New("VDF contains a NUL byte")
+	}
+	depth, err := textVDFDepth(body)
+	if err != nil {
+		return nil, err
+	}
+	if depth > maxTextVDFDepth {
+		return nil, fmt.Errorf("nests deeper than %d levels: %w", maxTextVDFDepth, ErrTooDeep)
+	}
+	return vdf.NewParser(bytes.NewReader(append(bytes.Clone(body), '\n'))).Parse()
 }
 
 // textVDFDepth is the deepest run of unclosed braces over the tokens the parser reads, so a comment or a quoted
