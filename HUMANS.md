@@ -12,37 +12,37 @@ go get github.com/Rethunk-Tech/go-gamelocator
 package main
 
 import (
- "fmt"
- "os"
- "path/filepath"
+	"fmt"
+	"os"
+	"path/filepath"
 
- "github.com/Rethunk-Tech/go-gamelocator/gog"
- "github.com/Rethunk-Tech/go-gamelocator/steam"
+	"github.com/Rethunk-Tech/go-gamelocator/gog"
+	"github.com/Rethunk-Tech/go-gamelocator/steam"
 )
 
 func main() {
- // A scratch home: a real program passes the user's home folder here.
- home, err := os.MkdirTemp("", "gamelocator-home")
- if err != nil {
-  panic(err)
- }
- defer func() { _ = os.RemoveAll(home) }()
+	// A scratch home: a real program passes the user's home folder here.
+	home, err := os.MkdirTemp("", "gamelocator-home")
+	if err != nil {
+		panic(err)
+	}
+	defer func() { _ = os.RemoveAll(home) }()
 
- // A Steam folder the player added, searched before the usual ones.
- added := filepath.Join(home, "Games", "Steam")
- if err := os.MkdirAll(filepath.Join(added, "steamapps"), 0o750); err != nil {
-  panic(err)
- }
- st, status := steam.Locate(home, added)
- fmt.Println(status, st.Root == added)
+	// A Steam folder the player added, searched before the usual ones.
+	added := filepath.Join(home, "Games", "Steam")
+	if err := os.MkdirAll(filepath.Join(added, "steamapps"), 0o750); err != nil {
+		panic(err)
+	}
+	st, status := steam.Locate(home, added)
+	fmt.Println(status, st.Root == added)
 
- // Edits need a signed-in account, and Steam closed; this scratch Steam has no loginusers.vdf.
- _, err = st.SetLaunchOptions("413150", func(current string) string { return "-x " + current },
-  steam.EditOptions{BackupSuffix: ".bak"})
- fmt.Println(err != nil)
+	// Edits need a signed-in account, and Steam closed; this scratch Steam has no loginusers.vdf.
+	_, err = st.SetLaunchOptions("413150", func(current string) string { return "-x " + current },
+		steam.EditOptions{BackupSuffix: ".bak"})
+	fmt.Println(err != nil)
 
- game := gog.Game{ProductID: "1453375253", Folder: "Stardew Valley", Marker: "Stardew Valley.dll"}
- fmt.Println(len(gog.Locate(home, game, gog.Roots{})))
+	game := gog.Game{ProductID: "1453375253", Folder: "Stardew Valley", Marker: "Stardew Valley.dll"}
+	fmt.Println(len(gog.Locate(home, game, gog.Roots{})))
 }
 ```
 
