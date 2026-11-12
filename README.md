@@ -12,7 +12,7 @@
 Finds games installed by PC stores and launchers on Linux, Windows, macOS (Steam) and Steam Deck, and reads and edits the Steam files a launcher needs. Package `gamelocator`, module `github.com/Rethunk-Tech/go-gamelocator`.
 
 Every launcher keeps its own list of installed games in its own format. This module reads those lists and answers one
-question: where is this game, per store. It reads files, never launches anything, and never contacts a network.
+question: where is this game, per store. It reads files. None launches a process but the two `flatpak override` calls, and none opens a network connection but `StoreHero`.
 
 ## Quick start
 

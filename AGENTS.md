@@ -40,6 +40,8 @@ afterwards (HKLM is never written), plus the Windows branches of the path tests.
 | --- | --- |
 | `gamelocator.go` | `GameDir`, the marker check every store uses |
 | `steam/steam.go` | Roots, `Steam`, libraries, accounts, art, text VDF parsing and its bounds, Flatpak grants |
+| `steam/store.go` | `StoreHero`, Steam store HTTP GET |
+| `steam/depot.go` | `InstalledDepots`, `DepotDownloadDir` |
 | `steam/localconfig.go` | `scanVDF`, `setLaunchOptions` and `SetLaunchOptions` |
 | `steam/shortcuts.go` | Binary VDF reader and writer, `AddShortcut`, `RemoveShortcuts` |
 | `steam/grid.go`, `icon.go` | Grid art for new shortcuts, the client icon |
