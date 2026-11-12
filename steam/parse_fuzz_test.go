@@ -3,23 +3,8 @@ package steam
 import (
 	"bufio"
 	"bytes"
-	"os"
-	"path/filepath"
 	"testing"
 )
-
-func seedFiles(f *testing.F) {
-	_ = filepath.WalkDir("testdata", func(path string, d os.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
-			return err
-		}
-		b, err := os.ReadFile(path)
-		if err == nil && len(b) > 0 && len(b) <= 64<<10 {
-			f.Add(b)
-		}
-		return nil
-	})
-}
 
 var seedLocalConfig = []byte(`"UserLocalConfigStore"
 {
@@ -43,7 +28,6 @@ var seedLocalConfig = []byte(`"UserLocalConfigStore"
 `)
 
 func FuzzScanVDF(f *testing.F) {
-	seedFiles(f)
 	f.Add(seedLocalConfig)
 	f.Add([]byte(`"k" "v"`))
 	f.Add([]byte(`"k" { }`))
@@ -58,7 +42,6 @@ func FuzzScanVDF(f *testing.F) {
 }
 
 func FuzzParseTextVDF(f *testing.F) {
-	seedFiles(f)
 	f.Add(seedLocalConfig)
 	f.Add([]byte(`"libraryfolders"
 {
@@ -106,7 +89,6 @@ func FuzzBinaryVDF(f *testing.F) {
 	}}})
 	f.Add(empty.Bytes())
 	f.Add(one.Bytes())
-	seedFiles(f)
 	f.Fuzz(func(t *testing.T, b []byte) {
 		if len(b) > 64<<10 {
 			return
