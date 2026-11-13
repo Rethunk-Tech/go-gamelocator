@@ -221,5 +221,9 @@ func (s Steam) SetLaunchOptions(appID string, merge func(current string) string,
 	if err := backupBeforeEdit(path, o.BackupSuffix, info.Mode().Perm()); err != nil {
 		return "", err
 	}
-	return value, safefs.WriteFileAtomic(path, next, info.Mode().Perm())
+	if err := safefs.WriteFileAtomic(path, next, info.Mode().Perm()); err != nil {
+		return "", err
+	}
+	// The atomic write lets the umask narrow the new file; Steam's file keeps the mode it had.
+	return value, safefs.Chmod(path, info.Mode().Perm())
 }
