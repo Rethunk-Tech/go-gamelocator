@@ -14,6 +14,7 @@ Notable changes to `go-gamelocator`. The format follows
 - `heroic`: `Prefix` ignores a relative wine prefix, which would be read against the process's working folder.
 - `wineprefix`: `Root` ignores a relative prefix, which would be read against the process's working folder.
 - `lutris`: Wine configs map `C:` through the prefix's `drive_c`, `Z:` through the Unix root, and a relative exe, and refuse a `C:` path that leaves the prefix.
+- `lutris`: `Locate` keeps the game's slug when the config has `slug:` but no `game_slug:`.
 
 ## [0.4.0] - 2026-11-07
 

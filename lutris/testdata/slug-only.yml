@@ -1,0 +1,7 @@
+slug: stardew-valley
+name: Stardew Valley
+game:
+  exe: DIR/stardew.exe
+  working_dir: DIR
+script:
+  runner: linux

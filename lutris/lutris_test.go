@@ -30,6 +30,9 @@ var fixtureWineZDrive []byte
 //go:embed testdata/wine-c-escape.yml
 var fixtureWineCEscape []byte
 
+//go:embed testdata/slug-only.yml
+var fixtureSlugOnly []byte
+
 // testGame is a game the way a Game implementation describes it to the Lutris locator.
 var testGame = Game{Slug: "stardew-valley", Keyword: "stardew", Marker: "Stardew Valley.dll"}
 
@@ -80,6 +83,32 @@ func TestInstallFromWineWindowsPaths(t *testing.T) {
 	}
 	if got := m.installFromYAML(fill(fixtureWineCEscape, prefix, "")); got != "" {
 		t.Fatalf("escaped C: = %q", got)
+	}
+}
+
+func TestLocateUsesTheGameSlugWhenTheConfigOmitsGameSlug(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("lutris discovery is Linux-only")
+	}
+	home := t.TempDir()
+	games := filepath.Join(home, ".local", "share", "lutris", "games")
+	if err := os.MkdirAll(games, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	install := filepath.Join(home, "sdv")
+	if err := os.MkdirAll(install, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := safefs.WriteFile(filepath.Join(install, "Stardew Valley.dll"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	yml := strings.ReplaceAll(string(fixtureSlugOnly), "DIR", install)
+	if err := safefs.WriteFile(filepath.Join(games, "stardew.yml"), []byte(yml), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	found := Locate(home, testGame)
+	if len(found) != 1 || found[0].Dir != install || found[0].Slug != testGame.Slug {
+		t.Fatalf("Locate = %+v", found)
 	}
 }
 

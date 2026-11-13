@@ -2,6 +2,7 @@
 package lutris
 
 import (
+	"cmp"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -83,7 +84,7 @@ func Locate(home string, g Game, extra ...string) []Install {
 				continue
 			}
 			seen[gameDir] = struct{}{}
-			out = append(out, Install{Dir: gameDir, Slug: configValue(reGameSlug, text), Prefix: wineprefix.Root(configValue(rePrefix, text))})
+			out = append(out, Install{Dir: gameDir, Slug: cmp.Or(configValue(reGameSlug, text), m.g.Slug), Prefix: wineprefix.Root(configValue(rePrefix, text))})
 		}
 	}
 	return out
