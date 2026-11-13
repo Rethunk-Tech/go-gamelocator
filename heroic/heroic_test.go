@@ -1,6 +1,7 @@
 package heroic
 
 import (
+	_ "embed"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,6 +12,9 @@ import (
 
 	"github.com/Rethunk-Tech/go-gamelocator/epic"
 )
+
+//go:embed testdata/gog-one-bad.json
+var fixtureGOGOneBad []byte
 
 func writeFile(t *testing.T, path, body string) {
 	t.Helper()
@@ -89,6 +93,15 @@ func TestGOGInstallsReadsAllThreeShapes(t *testing.T) {
 	writeFile(t, filepath.Join(cfg, "gog_store", "installed.json"), "junk")
 	if got := GOGInstalls(cfg, id); got != nil {
 		t.Errorf("junk: %v", got)
+	}
+}
+
+func TestGOGInstallsSkipsABadEntry(t *testing.T) {
+	const id = "1453375253"
+	cfg := t.TempDir()
+	writeFile(t, filepath.Join(cfg, "gog_store", "installed.json"), string(fixtureGOGOneBad))
+	if got := GOGInstalls(cfg, id); !slices.Equal(got, []string{"/games/good", "/games/numeric", "/games/also"}) {
+		t.Fatalf("got %v", got)
 	}
 }
 

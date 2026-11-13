@@ -9,6 +9,7 @@ Notable changes to `go-gamelocator`. The format follows
 ### Fixed
 
 - `epic`: `Installs` skips a malformed or incomplete entry instead of dropping the list.
+- `heroic`: `GOGInstalls` skips a malformed entry instead of dropping the list, and accepts a numeric product id.
 
 ## [0.4.0] - 2026-11-07
 

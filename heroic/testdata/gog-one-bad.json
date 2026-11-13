@@ -1,0 +1,28 @@
+{
+  "installed": [
+    {
+      "appName": "1453375253",
+      "install_path": "/games/good"
+    },
+    {
+      "appName": 1453375253,
+      "install_path": "/games/numeric"
+    },
+    {
+      "appName": "1453375253",
+      "install_path": 99
+    },
+    {
+      "appName": "1",
+      "install_path": "/nope"
+    },
+    {
+      "appName": "1453375253"
+    },
+    "not-an-object",
+    {
+      "appName": "1453375253",
+      "install_path": "/games/also"
+    }
+  ]
+}

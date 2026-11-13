@@ -28,43 +28,89 @@ func ConfigDirs(home string, custom ...string) []string {
 }
 
 type gogGame struct {
-	AppName     string `json:"appName"`
-	InstallPath string `json:"install_path"`
+	AppName, InstallPath string
 }
 
 // GOGInstalls are the install folders the GOG library in the config folder cfg lists for productID. The list comes in
-// three shapes: a list, an object with "installed" or "games" lists, and an object keyed by product id.
+// three shapes: a list, an object with "installed" or "games" lists, and an object keyed by product id. A bad entry is
+// skipped so one wrong type cannot hide the rest.
 func GOGInstalls(cfg, productID string) []string {
 	path := filepath.Join(cfg, "gog_store", "installed.json")
 	b, err := readcap.File(path, readcap.Config)
 	if err != nil {
 		return nil
 	}
-	var games []gogGame
-	var asList struct {
-		Installed []gogGame `json:"installed"`
-		Games     []gogGame `json:"games"`
-	}
-	switch {
-	case json.Unmarshal(b, &asList) == nil && len(asList.Installed)+len(asList.Games) > 0:
-		games = slices.Concat(asList.Installed, asList.Games)
-	case json.Unmarshal(b, &games) == nil:
-	default:
-		var keyed map[string]gogGame
-		if json.Unmarshal(b, &keyed) != nil {
-			return nil
+	var dirs []string
+	for _, g := range gogGames(b) {
+		if g.AppName == productID && g.InstallPath != "" {
+			dirs = append(dirs, g.InstallPath)
 		}
-		for id, g := range keyed {
-			g.AppName = cmp.Or(g.AppName, id)
+	}
+	return dirs
+}
+
+func gogGames(b []byte) []gogGame {
+	var asList struct {
+		Installed []json.RawMessage `json:"installed"`
+		Games     []json.RawMessage `json:"games"`
+	}
+	if json.Unmarshal(b, &asList) == nil && len(asList.Installed)+len(asList.Games) > 0 {
+		return decodeGOGGames(slices.Concat(asList.Installed, asList.Games), nil)
+	}
+	var list []json.RawMessage
+	if json.Unmarshal(b, &list) == nil {
+		return decodeGOGGames(list, nil)
+	}
+	var keyed map[string]json.RawMessage
+	if json.Unmarshal(b, &keyed) != nil {
+		return nil
+	}
+	return decodeGOGGames(nil, keyed)
+}
+
+func decodeGOGGames(list []json.RawMessage, keyed map[string]json.RawMessage) []gogGame {
+	var games []gogGame
+	add := func(raw json.RawMessage, id string) {
+		if g, ok := parseGOGGame(raw, id); ok {
 			games = append(games, g)
 		}
 	}
-	var dirs []string
-	for _, g := range games {
-		if g.AppName != productID {
-			continue
-		}
-		dirs = append(dirs, g.InstallPath)
+	for _, raw := range list {
+		add(raw, "")
 	}
-	return dirs
+	for id, raw := range keyed {
+		add(raw, id)
+	}
+	return games
+}
+
+func parseGOGGame(raw json.RawMessage, id string) (gogGame, bool) {
+	var m map[string]json.RawMessage
+	if json.Unmarshal(raw, &m) != nil {
+		return gogGame{}, false
+	}
+	path, ok := jsonString(m["install_path"])
+	if !ok || path == "" {
+		return gogGame{}, false
+	}
+	return gogGame{AppName: cmp.Or(jsonID(m["appName"]), id), InstallPath: path}, true
+}
+
+func jsonString(b json.RawMessage) (string, bool) {
+	var s string
+	if json.Unmarshal(b, &s) != nil {
+		return "", false
+	}
+	return s, true
+}
+
+func jsonID(b json.RawMessage) string {
+	if s, ok := jsonString(b); ok {
+		return s
+	}
+	var n json.Number
+	if json.Unmarshal(b, &n) == nil {
+		return n.String()
+	}
+	return ""
 }
