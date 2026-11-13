@@ -1,6 +1,7 @@
 package xbox
 
 import (
+	"path/filepath"
 	"strings"
 
 	"github.com/Rethunk-Tech/go-safefs"
@@ -20,6 +21,9 @@ func PackageRoot(pkg string) string { return packageRoot(packages, pkg) }
 
 // packageRoot reads the repository below HKCU at base; tests pass a scratch key.
 func packageRoot(base, pkg string) string {
+	if !packageOK(pkg) {
+		return ""
+	}
 	k, err := registry.OpenKey(registry.CURRENT_USER, base, registry.ENUMERATE_SUB_KEYS)
 	if err != nil {
 		return ""
@@ -39,7 +43,7 @@ func packageRoot(base, pkg string) string {
 		}
 		dir, _, err := sub.GetStringValue("PackageRootFolder")
 		_ = sub.Close()
-		if err == nil && safefs.IsDir(dir) {
+		if err == nil && filepath.IsAbs(dir) && safefs.IsDir(dir) {
 			return dir
 		}
 	}

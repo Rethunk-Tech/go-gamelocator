@@ -3,6 +3,7 @@ package xbox
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Rethunk-Tech/go-gamelocator/internal/winregtest"
@@ -27,5 +28,22 @@ func TestPackageRootTakesTheFirstPackageWhoseFolderExists(t *testing.T) {
 	}
 	if got := packageRoot(base+`\absent`, "Vendor.Game"); got != "" {
 		t.Fatalf("absent repository: %q", got)
+	}
+}
+
+func TestPackageRootIgnoresAnEmptyNameAndARelativeFolder(t *testing.T) {
+	base := winregtest.Scratch(t, "xbox-appx-hostile")
+	here := t.TempDir()
+	winregtest.SetString(t, base+`\_weird_1.0_x64__abc`, "PackageRootFolder", here)
+	if got := packageRoot(base, ""); got != "" {
+		t.Fatalf("empty pkg = %q", got)
+	}
+	rel, err := os.ReadFile(filepath.Join("testdata", "relative-root.txt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	winregtest.SetString(t, base+`\Vendor.Game_1.0_x64__abc`, "PackageRootFolder", strings.TrimSpace(string(rel)))
+	if got := packageRoot(base, "Vendor.Game"); got != "" {
+		t.Fatalf("relative folder = %q", got)
 	}
 }

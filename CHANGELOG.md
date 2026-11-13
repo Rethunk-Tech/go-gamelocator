@@ -16,6 +16,7 @@ Notable changes to `go-gamelocator`. The format follows
 - `lutris`: Wine configs map `C:` through the prefix's `drive_c`, `Z:` through the Unix root, and a relative exe, and refuse a `C:` path that leaves the prefix.
 - `lutris`: `Locate` keeps the game's slug when the config has `slug:` but no `game_slug:`.
 - `bottles`: `UserDir` skips Wine's built-in profiles (Public, Default User, All Users) instead of treating one as the player.
+- `xbox`: `PackageRoot` ignores an empty package name and a relative PackageRootFolder.
 
 ## [0.4.0] - 2026-11-07
 
