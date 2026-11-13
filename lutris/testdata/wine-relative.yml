@@ -1,0 +1,8 @@
+game_slug: stardew-valley
+name: Stardew Valley
+slug: stardew-valley-wine
+game:
+  exe: drive_c/GOG Games/Stardew Valley/StardewValley.exe
+  prefix: PREFIX
+script:
+  runner: wine

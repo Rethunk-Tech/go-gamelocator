@@ -13,6 +13,7 @@ Notable changes to `go-gamelocator`. The format follows
 - `heroic`: `EpicInstalls` skips a malformed entry instead of dropping the list, and uses the map key when `app_name` is missing.
 - `heroic`: `Prefix` ignores a relative wine prefix, which would be read against the process's working folder.
 - `wineprefix`: `Root` ignores a relative prefix, which would be read against the process's working folder.
+- `lutris`: Wine configs map `C:` through the prefix's `drive_c`, `Z:` through the Unix root, and a relative exe, and refuse a `C:` path that leaves the prefix.
 
 ## [0.4.0] - 2026-11-07
 

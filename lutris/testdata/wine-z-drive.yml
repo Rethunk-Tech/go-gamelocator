@@ -1,0 +1,8 @@
+game_slug: stardew-valley
+name: Stardew Valley
+slug: stardew-valley-wine
+game:
+  exe: Z:UNIXWIN\Stardew Valley.dll
+  prefix: PREFIX
+script:
+  runner: wine

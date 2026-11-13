@@ -1,0 +1,8 @@
+game_slug: stardew-valley
+name: Stardew Valley
+slug: stardew-valley-wine
+game:
+  working_dir: C:\..\..\outside
+  prefix: PREFIX
+script:
+  runner: wine

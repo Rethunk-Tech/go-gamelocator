@@ -18,6 +18,18 @@ var fixtureGogLinux []byte
 //go:embed testdata/steam-runner.yml
 var fixtureSteamRunner []byte
 
+//go:embed testdata/wine-c-drive.yml
+var fixtureWineCDrive []byte
+
+//go:embed testdata/wine-relative.yml
+var fixtureWineRelative []byte
+
+//go:embed testdata/wine-z-drive.yml
+var fixtureWineZDrive []byte
+
+//go:embed testdata/wine-c-escape.yml
+var fixtureWineCEscape []byte
+
 // testGame is a game the way a Game implementation describes it to the Lutris locator.
 var testGame = Game{Slug: "stardew-valley", Keyword: "stardew", Marker: "Stardew Valley.dll"}
 
@@ -34,6 +46,40 @@ func TestInstallFromFixture(t *testing.T) {
 	steam := newMatcher(testGame).installFromYAML(string(fixtureSteamRunner))
 	if steam != "" {
 		t.Fatalf("steam runner = %q", steam)
+	}
+}
+
+func TestInstallFromWineWindowsPaths(t *testing.T) {
+	dir := t.TempDir()
+	prefix := filepath.Join(dir, "prefix")
+	game := filepath.Join(prefix, "drive_c", "GOG Games", "Stardew Valley")
+	outside := filepath.Join(dir, "outside")
+	unix := filepath.Join(dir, "unix")
+	for _, p := range []string{game, outside, unix} {
+		if err := os.MkdirAll(p, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := safefs.WriteFile(filepath.Join(p, "Stardew Valley.dll"), nil, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	m := newMatcher(testGame)
+	fill := func(body []byte, prefixVal, unixWin string) string {
+		s := strings.ReplaceAll(string(body), "PREFIX", prefixVal)
+		return strings.ReplaceAll(s, "UNIXWIN", unixWin)
+	}
+	if got := m.installFromYAML(fill(fixtureWineCDrive, prefix, "")); got != game {
+		t.Fatalf("C: = %q, want %q", got, game)
+	}
+	if got := m.installFromYAML(fill(fixtureWineRelative, prefix, "")); got != game {
+		t.Fatalf("relative = %q, want %q", got, game)
+	}
+	z := strings.ReplaceAll(unix, `/`, `\`)
+	if got := m.installFromYAML(fill(fixtureWineZDrive, prefix, z)); got != unix {
+		t.Fatalf("Z: = %q, want %q", got, unix)
+	}
+	if got := m.installFromYAML(fill(fixtureWineCEscape, prefix, "")); got != "" {
+		t.Fatalf("escaped C: = %q", got)
 	}
 }
 

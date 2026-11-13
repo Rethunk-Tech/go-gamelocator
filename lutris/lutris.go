@@ -137,13 +137,14 @@ func (m matcher) matches(text string) bool {
 }
 
 func (m matcher) resolveDir(text string) string {
+	prefix := configValue(rePrefix, text)
 	if w := reWorkDir.FindStringSubmatch(text); len(w) == 2 {
-		if dir := gamelocator.GameDir(strings.Trim(w[1], `"'`), m.g.Marker); dir != "" {
+		if dir := gamelocator.GameDir(winePath(prefix, strings.Trim(w[1], `"'`)), m.g.Marker); dir != "" {
 			return dir
 		}
 	}
 	for _, e := range reExe.FindAllStringSubmatch(text, -1) {
-		exe := strings.Trim(e[1], `"'`)
+		exe := winePath(prefix, strings.Trim(e[1], `"'`))
 		if dir := gamelocator.GameDir(rootOfMarker(exe, m.g.Marker), m.g.Marker); dir != "" {
 			return dir
 		}
@@ -155,6 +156,71 @@ func (m matcher) resolveDir(text string) string {
 		}
 	}
 	return ""
+}
+
+// winePath is the Unix path a Lutris Wine config's exe or working_dir names: C: sits in the prefix's drive_c, Z: is
+// the Unix root, and a relative path is below the prefix. A C: or relative path that leaves the prefix is "".
+func winePath(prefix, p string) string {
+	p = strings.TrimSpace(p)
+	if p == "" {
+		return ""
+	}
+	if unix, ok := fromWindowsDrive(prefix, p); ok {
+		return unix
+	}
+	if filepath.IsAbs(p) {
+		return p
+	}
+	root := wineRoot(prefix)
+	if root == "" {
+		return ""
+	}
+	return stayIn(root, filepath.Join(root, filepath.FromSlash(strings.ReplaceAll(p, `\`, "/"))))
+}
+
+func fromWindowsDrive(prefix, p string) (string, bool) {
+	if len(p) < 2 || p[1] != ':' {
+		return "", false
+	}
+	drive := p[0]
+	if drive >= 'A' && drive <= 'Z' {
+		drive += 'a' - 'A'
+	}
+	if drive < 'a' || drive > 'z' || (len(p) > 2 && p[2] != '\\' && p[2] != '/') {
+		return "", false
+	}
+	rest := strings.ReplaceAll(p[2:], `\`, "/")
+	rest = strings.TrimPrefix(rest, "/")
+	switch drive {
+	case 'z':
+		return filepath.Join("/", rest), true
+	case 'c':
+		root := wineRoot(prefix)
+		if root == "" {
+			return "", true
+		}
+		c := filepath.Join(root, "drive_c")
+		return stayIn(c, filepath.Join(c, rest)), true
+	}
+	return "", false
+}
+
+func wineRoot(prefix string) string {
+	if root := wineprefix.Root(prefix); root != "" {
+		return root
+	}
+	if prefix != "" && filepath.IsAbs(prefix) {
+		return prefix
+	}
+	return ""
+}
+
+func stayIn(root, dir string) string {
+	rel, err := filepath.Rel(filepath.Clean(root), filepath.Clean(dir))
+	if err != nil || (rel != "." && !filepath.IsLocal(rel)) {
+		return ""
+	}
+	return filepath.Clean(dir)
 }
 
 // rootOfMarker is the install root implied by exe when exe is the marker file itself: the marker is a slash path below
