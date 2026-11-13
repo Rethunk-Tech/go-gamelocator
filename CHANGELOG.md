@@ -12,6 +12,7 @@ Notable changes to `go-gamelocator`. The format follows
 - `heroic`: `GOGInstalls` skips a malformed entry instead of dropping the list, and accepts a numeric product id.
 - `heroic`: `EpicInstalls` skips a malformed entry instead of dropping the list, and uses the map key when `app_name` is missing.
 - `heroic`: `Prefix` ignores a relative wine prefix, which would be read against the process's working folder.
+- `wineprefix`: `Root` ignores a relative prefix, which would be read against the process's working folder.
 
 ## [0.4.0] - 2026-11-07
 

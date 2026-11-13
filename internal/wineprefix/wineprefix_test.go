@@ -6,6 +6,13 @@ import (
 	"testing"
 )
 
+func TestRootIgnoresARelativePrefix(t *testing.T) {
+	t.Chdir(filepath.Join("testdata", "relative-prefix"))
+	if got := Root("pfx"); got != "" {
+		t.Fatalf("relative prefix = %q", got)
+	}
+}
+
 func TestRootPrefersProtonsPfxFolder(t *testing.T) {
 	dir := t.TempDir()
 	for _, p := range []string{filepath.Join(dir, "proton", "pfx", "drive_c"), filepath.Join(dir, "proton", "drive_c"), filepath.Join(dir, "wine", "drive_c")} {
