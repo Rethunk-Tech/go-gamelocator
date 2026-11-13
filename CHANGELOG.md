@@ -17,6 +17,7 @@ Notable changes to `go-gamelocator`. The format follows
 - `lutris`: `Locate` keeps the game's slug when the config has `slug:` but no `game_slug:`.
 - `bottles`: `UserDir` skips Wine's built-in profiles (Public, Default User, All Users) instead of treating one as the player.
 - `xbox`: `PackageRoot` ignores an empty package name and a relative PackageRootFolder.
+- `gog`: `MinigalaxyInstallDirs` skips a relative `install_dir`, which would be read against the process's working folder.
 
 ## [0.4.0] - 2026-11-07
 

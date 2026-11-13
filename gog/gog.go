@@ -129,6 +129,9 @@ func MinigalaxyInstallDirs(home string, custom ...string) []string {
 		if json.Unmarshal(b, &c) != nil || c.InstallDir == "" {
 			c.InstallDir = filepath.Join(home, "GOG Games")
 		}
+		if !filepath.IsAbs(c.InstallDir) {
+			continue
+		}
 		if !slices.Contains(out, c.InstallDir) {
 			out = append(out, c.InstallDir)
 		}

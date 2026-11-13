@@ -1,12 +1,16 @@
 package gog
 
 import (
+	_ "embed"
 	"os"
 	"path/filepath"
 	"runtime"
 	"slices"
 	"testing"
 )
+
+//go:embed testdata/minigalaxy-relative.json
+var fixtureMinigalaxyRelative []byte
 
 // testGame is a game the way a Game implementation describes it to the GOG locators.
 var testGame = Game{ProductID: "1453375253", Folder: "Stardew Valley", Marker: "Stardew Valley.dll"}
@@ -109,6 +113,25 @@ func TestMinigalaxyInstallDirFromItsConfig(t *testing.T) {
 	got := Locate(home, testGame, Roots{})
 	if len(got) != 1 || got[0].Source != SourceMinigalaxy || got[0].Dir != filepath.Join(lib, "Stardew Valley") {
 		t.Fatalf("got %#v", got)
+	}
+}
+
+func TestMinigalaxyInstallDirsSkipARelativeInstallDir(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Minigalaxy is Linux-only")
+	}
+	home := t.TempDir()
+	cfg := filepath.Join(home, ".config", "minigalaxy")
+	if err := os.MkdirAll(cfg, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(cfg, "config.json"), fixtureMinigalaxyRelative, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for _, d := range MinigalaxyInstallDirs(home) {
+		if d == "." || !filepath.IsAbs(d) {
+			t.Fatalf("relative install_dir was kept: %v", MinigalaxyInstallDirs(home))
+		}
 	}
 }
 
