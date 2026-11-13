@@ -194,3 +194,14 @@ func TestInstallFromYAMLMatchingAndResolving(t *testing.T) {
 		t.Error("an absent config read as empty")
 	}
 }
+
+func TestWinePathKeepsAHostAbsolutePath(t *testing.T) {
+	dir := t.TempDir()
+	if got := winePath("", dir); got != dir {
+		t.Fatalf("no prefix: %q, want %q", got, dir)
+	}
+	z := "Z:" + strings.ReplaceAll(dir, `/`, `\`)
+	if got := winePath("", z); got != dir {
+		t.Fatalf("Z: %q → %q, want %q", z, got, dir)
+	}
+}

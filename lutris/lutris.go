@@ -187,7 +187,14 @@ func fromWindowsDrive(prefix, p string) (string, bool) {
 	if drive >= 'A' && drive <= 'Z' {
 		drive += 'a' - 'A'
 	}
-	if drive < 'a' || drive > 'z' || (len(p) > 2 && p[2] != '\\' && p[2] != '/') {
+	if drive < 'a' || drive > 'z' {
+		return "", false
+	}
+	if len(p) > 2 && p[2] != '\\' && p[2] != '/' {
+		// Windows host path written after Z: (Z:C:\Users\...), not a Wine Z:\unix path.
+		if drive == 'z' && filepath.IsAbs(p[2:]) {
+			return p[2:], true
+		}
 		return "", false
 	}
 	rest := strings.ReplaceAll(p[2:], `\`, "/")
@@ -198,7 +205,7 @@ func fromWindowsDrive(prefix, p string) (string, bool) {
 	case 'c':
 		root := wineRoot(prefix)
 		if root == "" {
-			return "", true
+			return "", false
 		}
 		c := filepath.Join(root, "drive_c")
 		return stayIn(c, filepath.Join(c, rest)), true
