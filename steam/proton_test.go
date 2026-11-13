@@ -47,6 +47,17 @@ func TestLibraryOfWalksUpToSteamapps(t *testing.T) {
 	}
 }
 
+// Windows libraries made by older clients keep the folder as SteamApps, and Windows names match without case.
+func TestLibraryOfMatchesSteamAppsWithoutCaseOnWindows(t *testing.T) {
+	dir := filepath.Join("lib", "SteamApps", "common", "Game")
+	if got, ok := libraryOf(dir, "windows"); !ok || got != filepath.Join("lib", "SteamApps") {
+		t.Fatalf("windows: got %q %v", got, ok)
+	}
+	if _, ok := libraryOf(dir, "linux"); ok {
+		t.Fatal("linux names are case-sensitive")
+	}
+}
+
 func TestPrefixVersionIsConfigInfosFirstLine(t *testing.T) {
 	prefix := t.TempDir()
 	if got := PrefixVersion(prefix); got != "" {

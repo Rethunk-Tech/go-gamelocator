@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -122,16 +123,21 @@ func PickProton(found []ProtonBuild, want, tool string) (ProtonBuild, bool) {
 
 // LibraryOf is the steamapps folder holding the install at dir, found by walking up; ok is false when dir is not in
 // one.
-func LibraryOf(dir string) (steamapps string, ok bool) {
-	steamapps = dir
-	for filepath.Base(steamapps) != "steamapps" {
-		parent := filepath.Dir(steamapps)
-		if parent == steamapps {
+func LibraryOf(dir string) (steamapps string, ok bool) { return libraryOf(dir, runtime.GOOS) }
+
+// libraryOf is LibraryOf for goos: Windows names match without case, and libraries older clients made there are named
+// SteamApps.
+func libraryOf(dir, goos string) (string, bool) {
+	for p := dir; ; {
+		if base := filepath.Base(p); base == "steamapps" || goos == "windows" && strings.EqualFold(base, "steamapps") {
+			return p, true
+		}
+		parent := filepath.Dir(p)
+		if parent == p {
 			return "", false
 		}
-		steamapps = parent
+		p = parent
 	}
-	return steamapps, true
 }
 
 // PrefixVersion is the first line of the Proton prefix folder's config_info (the tool version that created it), or ""
