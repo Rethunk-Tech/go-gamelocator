@@ -1,6 +1,7 @@
 package epic
 
 import (
+	_ "embed"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -8,6 +9,9 @@ import (
 	"slices"
 	"testing"
 )
+
+//go:embed testdata/one-bad-entry.json
+var fixtureOneBadEntry []byte
 
 func TestListDirsAreWindowsOnlyAndUserFoldersComeFirst(t *testing.T) {
 	env := func(k string) string {
@@ -54,6 +58,18 @@ func TestInstallsReadsTheLaunchersList(t *testing.T) {
 	}
 	if got := Installs(dir); len(got) != 0 {
 		t.Fatalf("junk: %v", got)
+	}
+}
+
+func TestInstallsSkipsABadEntry(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, ListFile), fixtureOneBadEntry, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got := Installs(dir)
+	want := []Install{{AppName: "Good", Dir: "/lib/Good"}, {AppName: "Also", Dir: "/lib/Also"}}
+	if !slices.Equal(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
 	}
 }
 

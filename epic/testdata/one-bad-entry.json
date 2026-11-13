@@ -1,0 +1,23 @@
+{
+  "InstallationList": [
+    {
+      "InstallLocation": "/lib/Good",
+      "AppName": "Good"
+    },
+    {
+      "InstallLocation": 123,
+      "AppName": "BadType"
+    },
+    {
+      "AppName": "NoDir"
+    },
+    {
+      "InstallLocation": "/lib/NoName"
+    },
+    "not-an-object",
+    {
+      "InstallLocation": "/lib/Also",
+      "AppName": "Also"
+    }
+  ]
+}

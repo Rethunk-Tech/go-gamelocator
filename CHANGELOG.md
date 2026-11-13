@@ -6,6 +6,10 @@ Notable changes to `go-gamelocator`. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- `epic`: `Installs` skips a malformed or incomplete entry instead of dropping the list.
+
 ## [0.4.0] - 2026-11-07
 
 ### Added

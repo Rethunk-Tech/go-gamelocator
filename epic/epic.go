@@ -41,16 +41,20 @@ func Installs(dir string) []Install {
 		return nil
 	}
 	var list struct {
-		Installs []struct {
-			Location string `json:"InstallLocation"`
-			AppName  string `json:"AppName"`
-		} `json:"InstallationList"`
+		Installs []json.RawMessage `json:"InstallationList"`
 	}
 	if json.Unmarshal(b, &list) != nil {
 		return nil
 	}
 	out := make([]Install, 0, len(list.Installs))
-	for _, in := range list.Installs {
+	for _, raw := range list.Installs {
+		var in struct {
+			Location string `json:"InstallLocation"`
+			AppName  string `json:"AppName"`
+		}
+		if json.Unmarshal(raw, &in) != nil || in.AppName == "" || in.Location == "" {
+			continue
+		}
 		out = append(out, Install{AppName: in.AppName, Dir: in.Location})
 	}
 	return out
