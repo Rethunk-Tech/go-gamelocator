@@ -63,6 +63,7 @@ func AppNameAt(dir string, names []string) string {
 }
 
 func appNameAt(lists []string, dir string, names []string) string {
+	dir = filepath.Clean(dir)
 	for _, list := range lists {
 		for _, in := range Installs(list) {
 			loc := filepath.Clean(in.Dir)

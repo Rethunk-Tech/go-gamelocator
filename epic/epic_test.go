@@ -68,6 +68,9 @@ func TestAppNameAtPrefersTheListedProductAndFallsBackToTheFirst(t *testing.T) {
 	if got := appNameAt([]string{list}, filepath.Join(game, "game"), names); got != "Second" {
 		t.Fatalf("a game folder one below the listed one: %q", got)
 	}
+	if got := appNameAt([]string{list}, game+"/sub/..", names); got != "Second" {
+		t.Fatalf("unclean dir: %q", got)
+	}
 	if got := appNameAt([]string{list}, "/elsewhere", names); got != "First" {
 		t.Fatalf("unlisted: %q", got)
 	}
