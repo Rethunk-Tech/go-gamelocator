@@ -170,8 +170,11 @@ func (s Steam) CompatTool(appID string) string {
 // first, then in the root and every library of each of steams. When no library has the folder yet it returns the one
 // in steamapps, where Steam will create it.
 func CompatData(appID, steamapps string, steams ...Steam) string {
+	if !filepath.IsLocal(appID) {
+		return ""
+	}
 	own := filepath.Join(steamapps, "compatdata", appID)
-	if !filepath.IsLocal(appID) || safefs.IsDir(own) {
+	if safefs.IsDir(own) {
 		return own
 	}
 	for _, st := range steams {

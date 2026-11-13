@@ -140,3 +140,13 @@ func TestCompatDataSearchesEveryLibrary(t *testing.T) {
 		t.Fatalf("ProtonUserDir = %q", got)
 	}
 }
+
+func TestCompatDataRejectsNonLocalAppID(t *testing.T) {
+	own := filepath.Join(t.TempDir(), "steamapps")
+	if got := CompatData("", own); got != "" {
+		t.Fatalf(`CompatData("", own) = %q, want ""`, got)
+	}
+	if got := CompatData("..", own); got != "" {
+		t.Fatalf(`CompatData("..", own) = %q, want ""`, got)
+	}
+}
