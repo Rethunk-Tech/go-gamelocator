@@ -37,7 +37,7 @@ We handle the report inside the private advisory, so you see each status change 
 - **`shortcuts.vdf`**, binary, read by `AddShortcut` and `RemoveShortcuts`. Nesting past 16 returns `ErrTooDeep`, and
   any accepted file re-encodes to the bytes read (fuzzed). A string over 64 KiB is refused, and a shortcut field with a NUL byte is refused on write.
 - **App ids and Heroic app names** are joined into paths: `HeroArt`, `ClientIcon` and `BuildID` refuse an id that
-  would leave its folder (`filepath.IsLocal`), and `heroic.Prefix` refuses anything but one plain file name.
+  is not decimal digits (`numericID`), and `heroic.Prefix` refuses anything but one plain file name.
 - **Heroic, Epic, Minigalaxy and Lutris files** are plain JSON or YAML text; a malformed one yields no installs, never
   a panic.
 - **Registry values** (`GalaxyDir`, `ea.RegistryDir`, `xbox.PackageRoot`, Steam paths) are returned as paths only; a

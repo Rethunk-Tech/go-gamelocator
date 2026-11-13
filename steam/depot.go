@@ -19,7 +19,7 @@ type Depot struct {
 // ordered by depot id. An app with no InstalledDepots block has none; an app with no manifest in library wraps
 // os.ErrNotExist.
 func InstalledDepots(library, appID string) ([]Depot, error) {
-	if !filepath.IsLocal(appID) {
+	if !numericID(appID) {
 		return nil, fmt.Errorf("invalid Steam app id %q", appID)
 	}
 	m, err := parseVDF(filepath.Join(library, "steamapps", "appmanifest_"+appID+".acf"))

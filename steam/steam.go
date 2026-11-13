@@ -282,7 +282,7 @@ func vdfKey(m map[string]any, key string) any {
 
 // HeroArt returns the path of appID's library_hero.jpg, or "" when Steam has not cached it.
 func (s Steam) HeroArt(appID string) string {
-	if !filepath.IsLocal(appID) {
+	if !numericID(appID) {
 		return ""
 	}
 	cache := filepath.Join(s.Root, "appcache", "librarycache")
@@ -381,7 +381,7 @@ func (s Steam) userConfigDir() (string, error) {
 
 // ScreenshotsDir is the folder Steam keeps appID's screenshots in for the MostRecent account.
 func (s Steam) ScreenshotsDir(appID string) (string, error) {
-	if !filepath.IsLocal(appID) {
+	if !numericID(appID) {
 		return "", fmt.Errorf("invalid app id %q", appID)
 	}
 	cfg, err := s.userConfigDir()

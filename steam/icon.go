@@ -17,7 +17,7 @@ var pngMagic = []byte("\x89PNG\r\n\x1a\n")
 // ClientIcon is appID's square icon: the largest image of the client icon Steam keeps in steam/games, else the small
 // copy in its library cache; nil when Steam has neither.
 func (s Steam) ClientIcon(appID string) []byte {
-	if !filepath.IsLocal(appID) {
+	if !numericID(appID) {
 		return nil
 	}
 	cache := filepath.Join(s.Root, "appcache", "librarycache", appID)

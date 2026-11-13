@@ -65,3 +65,13 @@ func TestSteamIDsThatAreNotNumbersAreRefused(t *testing.T) {
 		}
 	}
 }
+
+func TestAppIDsAreNumericNotJustLocal(t *testing.T) {
+	lib := t.TempDir()
+	if _, err := InstalledDepots(lib, "sub/1000"); err == nil {
+		t.Fatal("a nested app id was accepted")
+	}
+	if (Steam{Root: lib}).ClientIcon("sub/1000") != nil || CompatData("a/b", lib) != "" {
+		t.Fatal("a nested app id was accepted")
+	}
+}
