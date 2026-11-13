@@ -381,6 +381,9 @@ func (s Steam) userConfigDir() (string, error) {
 
 // ScreenshotsDir is the folder Steam keeps appID's screenshots in for the MostRecent account.
 func (s Steam) ScreenshotsDir(appID string) (string, error) {
+	if !filepath.IsLocal(appID) {
+		return "", fmt.Errorf("invalid app id %q", appID)
+	}
 	cfg, err := s.userConfigDir()
 	if err != nil {
 		return "", err
