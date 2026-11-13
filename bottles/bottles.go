@@ -66,13 +66,20 @@ func Of(dir string) string {
 	}
 }
 
+// windowsSystemProfiles are Wine's built-in users, not the player who installed the game.
+var windowsSystemProfiles = map[string]struct{}{
+	"All Users": {}, "Default": {}, "Default User": {}, "Public": {},
+}
+
 // UserDir is the Windows profile folder inside a bottle: its one real user's, else Wine's default steamuser.
 func UserDir(bottle string) string {
 	users := filepath.Join(bottle, "drive_c", "users")
 	if entries, err := os.ReadDir(users); err == nil {
 		for _, e := range entries {
-			if e.IsDir() && e.Name() != "Public" {
-				return filepath.Join(users, e.Name())
+			if e.IsDir() {
+				if _, skip := windowsSystemProfiles[e.Name()]; !skip {
+					return filepath.Join(users, e.Name())
+				}
 			}
 		}
 	}

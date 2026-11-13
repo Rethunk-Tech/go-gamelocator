@@ -82,6 +82,16 @@ func TestDirsFollowCustomXDGData(t *testing.T) {
 	}
 }
 
+func TestUserDirSkipsWindowsSystemProfiles(t *testing.T) {
+	bottle, err := filepath.Abs(filepath.Join("testdata", "system-profiles"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := UserDir(bottle), filepath.Join(bottle, "drive_c", "users", "steamuser"); got != want {
+		t.Fatalf("got %q, want %q", got, want)
+	}
+}
+
 func TestNameUserDirAndRunArgv(t *testing.T) {
 	bottle := filepath.Join(t.TempDir(), "folder")
 	if got := Name(bottle); got != "folder" {
