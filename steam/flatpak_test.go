@@ -1,6 +1,7 @@
 package steam
 
 import (
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -19,8 +20,15 @@ func TestHasFilesystem(t *testing.T) {
 	if HasFilesystem("[Context]\nfilesystems=xdg-download;\n", dir) {
 		t.Fatal("unrelated filesystem")
 	}
-	if !HasFilesystem("filesystems=home;", dir) {
-		t.Fatal("home should grant")
+	if HasFilesystem("filesystems=home;", "/mnt/games") {
+		t.Fatal("home granted a path outside the user's home")
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !HasFilesystem("filesystems=home;", home) {
+		t.Fatal("home should grant the user's home")
 	}
 	if HasFilesystem("", dir) {
 		t.Fatal("empty show")

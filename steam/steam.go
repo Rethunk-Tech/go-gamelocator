@@ -129,8 +129,18 @@ func HasFilesystem(show, dataDir string) bool {
 			path, _, _ := strings.Cut(part, ":")
 			path = strings.TrimSpace(path)
 			switch path {
-			case "home", "host":
+			case "host":
 				return true
+			case "home":
+				home, err := os.UserHomeDir()
+				if err != nil {
+					continue
+				}
+				rel, err := filepath.Rel(filepath.Clean(home), dataDir)
+				if err == nil && (rel == "." || filepath.IsLocal(rel)) {
+					return true
+				}
+				continue
 			}
 			if safefs.SamePath(path, dataDir) {
 				return true
