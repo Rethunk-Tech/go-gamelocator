@@ -58,6 +58,17 @@ func TestAddShortcutCreatesTheAccountsFirstShortcutsFile(t *testing.T) {
 	}
 }
 
+func TestAddShortcutLeavesTheFileAloneWhenCoverCopyFails(t *testing.T) {
+	s, dir := signedIn(t)
+	_, err := s.AddShortcut(Shortcut{Name: "A", Exe: "/opt/launcher", StartDir: "/opt", Cover: "/no/such/cover.png"}, testEdit)
+	if err == nil {
+		t.Fatal("missing cover")
+	}
+	if _, err := os.Stat(filepath.Join(dir, "shortcuts.vdf")); !os.IsNotExist(err) {
+		t.Fatalf("shortcuts.vdf exists after cover failure: %v", err)
+	}
+}
+
 func TestEditsRefuseAnEmptyBackupSuffixBeforeTouchingAFile(t *testing.T) {
 	root := t.TempDir()
 	st := Steam{Root: root}

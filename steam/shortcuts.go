@@ -285,6 +285,11 @@ func (s Steam) AddShortcut(sc Shortcut, o EditOptions) (AddResult, error) {
 	if err != nil {
 		return "", err
 	}
+	if res == Added {
+		if err := writeGrid(dir, appID, sc.Cover); err != nil {
+			return "", err
+		}
+	}
 	if res != Unchanged {
 		if err := os.MkdirAll(dir, 0o750); err != nil {
 			return "", err
@@ -296,10 +301,7 @@ func (s Steam) AddShortcut(sc Shortcut, o EditOptions) (AddResult, error) {
 			return "", err
 		}
 	}
-	if res != Added {
-		return res, nil
-	}
-	return res, writeGrid(dir, appID, sc.Cover)
+	return res, nil
 }
 
 // removeShortcuts drops every entry of a shortcuts.vdf body that match selects and renumbers the rest, since Steam
