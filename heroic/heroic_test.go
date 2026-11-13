@@ -19,6 +19,9 @@ var fixtureGOGOneBad []byte
 //go:embed testdata/epic-one-bad.json
 var fixtureEpicOneBad []byte
 
+//go:embed testdata/prefix-relative.json
+var fixturePrefixRelative []byte
+
 func writeFile(t *testing.T, path, body string) {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
@@ -136,6 +139,19 @@ func TestPrefixIsThePfxFolderOfAProtonPrefix(t *testing.T) {
 		if got := Prefix(dir, app); got != want {
 			t.Errorf("%s: %q, want %q", app, got, want)
 		}
+	}
+}
+
+func TestPrefixIgnoresARelativeWinePrefix(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+	if err := os.MkdirAll(filepath.Join("pfx", "drive_c"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	cfg := filepath.Join(root, "cfg")
+	writeFile(t, filepath.Join(cfg, "GamesConfig", "game.json"), string(fixturePrefixRelative))
+	if got := Prefix(cfg, "game"); got != "" {
+		t.Fatalf("relative prefix = %q", got)
 	}
 }
 

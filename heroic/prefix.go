@@ -33,7 +33,7 @@ func Prefix(cfg, appName string) string {
 	if json.Unmarshal(b, &file) != nil || json.Unmarshal(file[appName], &game) != nil {
 		return ""
 	}
-	if game.Prefix == "" {
+	if game.Prefix == "" || !filepath.IsAbs(game.Prefix) {
 		return ""
 	}
 	if game.Wine.Type == "proton" {
