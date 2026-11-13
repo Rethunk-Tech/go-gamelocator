@@ -1,0 +1,21 @@
+{
+  "Good": {
+    "app_name": "Good",
+    "install_path": "/games/Good"
+  },
+  "BadType": {
+    "app_name": "BadType",
+    "install_path": 1
+  },
+  "KeyOnly": {
+    "install_path": "/games/KeyOnly"
+  },
+  "Empty": {
+    "app_name": "Empty",
+    "install_path": ""
+  },
+  "Also": {
+    "app_name": "Also",
+    "install_path": "/games/Also"
+  }
+}

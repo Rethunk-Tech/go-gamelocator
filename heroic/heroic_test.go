@@ -16,6 +16,9 @@ import (
 //go:embed testdata/gog-one-bad.json
 var fixtureGOGOneBad []byte
 
+//go:embed testdata/epic-one-bad.json
+var fixtureEpicOneBad []byte
+
 func writeFile(t *testing.T, path, body string) {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
@@ -133,6 +136,20 @@ func TestPrefixIsThePfxFolderOfAProtonPrefix(t *testing.T) {
 		if got := Prefix(dir, app); got != want {
 			t.Errorf("%s: %q, want %q", app, got, want)
 		}
+	}
+}
+
+func TestEpicInstallsSkipsABadEntry(t *testing.T) {
+	cfg := t.TempDir()
+	writeFile(t, EpicList(cfg), string(fixtureEpicOneBad))
+	got := EpicInstalls(cfg)
+	want := []epic.Install{
+		{AppName: "Also", Dir: "/games/Also"},
+		{AppName: "Good", Dir: "/games/Good"},
+		{AppName: "KeyOnly", Dir: "/games/KeyOnly"},
+	}
+	if !slices.Equal(got, want) {
+		t.Fatalf("got %v, want %v", got, want)
 	}
 }
 

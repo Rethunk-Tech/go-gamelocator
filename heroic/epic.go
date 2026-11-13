@@ -22,16 +22,21 @@ func EpicInstalls(cfg string) []epic.Install {
 	if err != nil {
 		return nil
 	}
-	var list map[string]struct {
-		AppName string `json:"app_name"`
-		Path    string `json:"install_path"`
-	}
+	var list map[string]json.RawMessage
 	if json.Unmarshal(b, &list) != nil {
 		return nil
 	}
 	out := make([]epic.Install, 0, len(list))
-	for _, in := range list {
-		out = append(out, epic.Install{Dir: in.Path, AppName: in.AppName})
+	for id, raw := range list {
+		var m map[string]json.RawMessage
+		if json.Unmarshal(raw, &m) != nil {
+			continue
+		}
+		path, ok := jsonString(m["install_path"])
+		if !ok || path == "" {
+			continue
+		}
+		out = append(out, epic.Install{Dir: path, AppName: cmp.Or(jsonID(m["app_name"]), id)})
 	}
 	// Map order is random; callers take the first match.
 	slices.SortFunc(out, func(a, b epic.Install) int {
