@@ -122,3 +122,15 @@ func TestPrefixIsThePfxFolderOfAProtonPrefix(t *testing.T) {
 		}
 	}
 }
+
+func TestEpicInstallsOrderIsStable(t *testing.T) {
+	cfg := t.TempDir()
+	body := `{"B":{"app_name":"B","install_path":"/b"},"A":{"app_name":"A","install_path":"/a"},"C":{"app_name":"C","install_path":"/c"},"D":{"app_name":"D","install_path":"/d"}}`
+	writeFile(t, EpicList(cfg), body)
+	for range 50 {
+		got := EpicInstalls(cfg)
+		if len(got) != 4 || got[0].AppName != "A" || got[3].AppName != "D" {
+			t.Fatalf("got %v", got)
+		}
+	}
+}

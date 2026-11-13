@@ -1,8 +1,11 @@
 package heroic
 
 import (
+	"cmp"
 	"encoding/json"
 	"path/filepath"
+	"slices"
+	"strings"
 
 	"github.com/Rethunk-Tech/go-gamelocator/epic"
 	"github.com/Rethunk-Tech/go-gamelocator/internal/readcap"
@@ -30,5 +33,9 @@ func EpicInstalls(cfg string) []epic.Install {
 	for _, in := range list {
 		out = append(out, epic.Install{Dir: in.Path, AppName: in.AppName})
 	}
+	// Map order is random; callers take the first match.
+	slices.SortFunc(out, func(a, b epic.Install) int {
+		return cmp.Or(strings.Compare(a.AppName, b.AppName), strings.Compare(a.Dir, b.Dir))
+	})
 	return out
 }
