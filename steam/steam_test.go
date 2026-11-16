@@ -312,7 +312,7 @@ func TestInstallDirLibraryFileOrder(t *testing.T) {
 	}
 	s := Steam{Root: root}
 	want := filepath.Join(libA, "steamapps", "common", "GameA")
-	for i := 0; i < 80; i++ {
+	for i := range 80 {
 		got, err := s.InstallDir(appID)
 		if err != nil {
 			t.Fatal(err)

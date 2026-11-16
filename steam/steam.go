@@ -196,29 +196,33 @@ func (s Steam) Libraries() ([]string, error) {
 func libraryFolderOrder(folders map[string]any, vdfPath string) []string {
 	seen := make(map[string]bool, len(folders))
 	var keys []string
-	if body, err := os.ReadFile(vdfPath); err == nil {
-		i := 0
-		for i < len(body) {
-			if body[i] != '"' {
-				i++
-				continue
-			}
-			i++
-			start := i
-			for i < len(body) && body[i] != '"' {
-				if body[i] == '\\' && i+1 < len(body) {
-					i += 2
+	if f, err := safefs.Open(vdfPath); err == nil {
+		body, err := safefs.ReadCapped(f, maxTextVDFBytes)
+		_ = f.Close()
+		if err == nil {
+			i := 0
+			for i < len(body) {
+				if body[i] != '"' {
+					i++
 					continue
 				}
 				i++
-			}
-			tok := string(body[start:i])
-			if i < len(body) {
-				i++
-			}
-			if _, ok := folders[tok]; ok && !seen[tok] {
-				seen[tok] = true
-				keys = append(keys, tok)
+				start := i
+				for i < len(body) && body[i] != '"' {
+					if body[i] == '\\' && i+1 < len(body) {
+						i += 2
+						continue
+					}
+					i++
+				}
+				tok := string(body[start:i])
+				if i < len(body) {
+					i++
+				}
+				if _, ok := folders[tok]; ok && !seen[tok] {
+					seen[tok] = true
+					keys = append(keys, tok)
+				}
 			}
 		}
 	}
