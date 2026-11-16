@@ -145,6 +145,28 @@ func TestFixture(t *testing.T) {
 	}
 }
 
+func TestCurrentAccountPicksNewestMostRecent(t *testing.T) {
+	root := t.TempDir()
+	s := Steam{Root: root}
+	write := func(body string) {
+		writeAt(t, filepath.Join(root, "config", "loginusers.vdf"), []byte(body))
+	}
+	write(`"users" { "76561198000000001" { "AccountName" "old" "MostRecent" "1" "Timestamp" "100" } "76561198000000002" { "AccountName" "new" "MostRecent" "1" "Timestamp" "200" } }`)
+	for i := range 32 {
+		acct, err := s.CurrentAccount()
+		if err != nil || acct.ID != "76561198000000002" || acct.AccountName != "new" {
+			t.Fatalf("run %d: newer MostRecent = %+v, %v", i, acct, err)
+		}
+	}
+	write(`"users" { "76561198000000002" { "AccountName" "b" "MostRecent" "1" "Timestamp" "100" } "76561198000000001" { "AccountName" "a" "MostRecent" "1" "Timestamp" "100" } }`)
+	for i := range 32 {
+		acct, err := s.CurrentAccount()
+		if err != nil || acct.ID != "76561198000000001" || acct.AccountName != "a" {
+			t.Fatalf("run %d: Timestamp tie = %+v, %v", i, acct, err)
+		}
+	}
+}
+
 func TestLaunchOptions(t *testing.T) {
 	root := t.TempDir()
 	write := func(rel, body string) {

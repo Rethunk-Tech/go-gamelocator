@@ -297,9 +297,11 @@ func (s Steam) CurrentAccount() (Account, error) {
 	}
 	users, _ := m["users"].(map[string]any)
 	// Older clients mark the signed-in account MostRecent; current ones (2026) keep only each account's last sign-in
-	// Timestamp, so the newest one is the account in use.
-	var best Account
-	var bestAt int64 = -1
+	// Timestamp, so the newest one is the account in use. Two MostRecent=1 rows cannot be ordered by map iteration,
+	// so they use Timestamp then SteamID64.
+	var best, marked Account
+	var bestAt, markedAt int64 = -1, -1
+	haveMarked := false
 	for id, u := range users {
 		e, ok := u.(map[string]any)
 		if !ok {
@@ -308,13 +310,23 @@ func (s Steam) CurrentAccount() (Account, error) {
 		name, _ := vdfKey(e, "AccountName").(string)
 		persona, _ := vdfKey(e, "PersonaName").(string)
 		acct := Account{ID: id, AccountName: name, PersonaName: persona}
-		if vdfKey(e, "MostRecent") == "1" {
-			return acct, nil
-		}
 		ts, _ := vdfKey(e, "Timestamp").(string)
-		if at, err := strconv.ParseInt(ts, 10, 64); err == nil && (at > bestAt || at == bestAt && id < best.ID) {
+		at, tsErr := strconv.ParseInt(ts, 10, 64)
+		if vdfKey(e, "MostRecent") == "1" {
+			if tsErr != nil {
+				at = -1
+			}
+			if !haveMarked || at > markedAt || at == markedAt && id < marked.ID {
+				marked, markedAt, haveMarked = acct, at, true
+			}
+			continue
+		}
+		if tsErr == nil && (at > bestAt || at == bestAt && id < best.ID) {
 			best, bestAt = acct, at
 		}
+	}
+	if haveMarked {
+		return marked, nil
 	}
 	if bestAt < 0 {
 		return Account{}, ErrNoAccount
