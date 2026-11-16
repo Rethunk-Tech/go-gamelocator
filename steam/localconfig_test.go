@@ -97,3 +97,20 @@ func TestSetLaunchOptionsEditsOnlyTheOneValue(t *testing.T) {
 		t.Fatal("a file without an apps section must be refused")
 	}
 }
+
+// A merge that keeps the value it was given changes nothing, so the file must come back byte for byte and the caller
+// must see the path it launched: "C:\new\saves" holds one backslash, not an escaped n.
+func TestSetLaunchOptionsIdentityMergeKeepsBytes(t *testing.T) {
+	in := []byte(strings.Replace(localConfig, `"-old"`, `"C:\new\saves -old"`, 1))
+
+	out, value, err := setLaunchOptions(in, "413150", func(o string) string { return o })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(out, in) {
+		t.Fatalf("identity merge rewrote the file:\n%s", out)
+	}
+	if want := `C:\new\saves -old`; value != want {
+		t.Fatalf("value = %q, want %q", value, want)
+	}
+}

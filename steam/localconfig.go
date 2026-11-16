@@ -41,11 +41,12 @@ func scanVDF(b []byte) ([]vdfToken, error) {
 				if b[i] == '\\' && i+1 < len(b) {
 					i++
 					switch b[i] {
-					case 'n':
-						sb.WriteByte('\n')
-					case 't':
-						sb.WriteByte('\t')
+					case '\\', '"':
+						sb.WriteByte(b[i])
 					default:
+						// Steam escapes only \\ and \", so the backslash in a Windows path such as "C:\saves" is
+						// part of the value: decoding it as an escape would rewrite the path the player launched.
+						sb.WriteByte('\\')
 						sb.WriteByte(b[i])
 					}
 				} else {
@@ -84,6 +85,11 @@ func setLaunchOptions(b []byte, appID string, merge func(old string) string) ([]
 	switch {
 	case optVal != nil:
 		value := merge(optVal.text)
+		if value == optVal.text {
+			// The token's spelling does not survive decoding (`\s` and `s` decode alike), so re-quoting a value
+			// the merge kept would rewrite bytes for a change it did not make.
+			return b, value, nil
+		}
 		return splice(b, optVal.start, optVal.end, quoteVDF(value)), value, nil
 	case appOpen >= 0 && appClose >= 0:
 		value := merge("")
