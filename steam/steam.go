@@ -168,7 +168,8 @@ func GrantFilesystem(dataDir string) error {
 
 // Libraries returns the library folder paths listed in libraryfolders.vdf.
 func (s Steam) Libraries() ([]string, error) {
-	m, err := parseVDF(filepath.Join(s.Root, "steamapps", "libraryfolders.vdf"))
+	path := filepath.Join(s.Root, "steamapps", "libraryfolders.vdf")
+	m, err := parseVDF(path)
 	if err != nil {
 		return nil, err
 	}
@@ -177,14 +178,58 @@ func (s Steam) Libraries() ([]string, error) {
 		return nil, errors.New("libraryfolders.vdf has no libraryfolders section")
 	}
 	var paths []string
-	for _, entry := range folders {
-		if e, ok := entry.(map[string]any); ok {
-			if p, ok := e["path"].(string); ok && filepath.IsAbs(p) {
-				paths = append(paths, p)
-			}
+	for _, k := range libraryFolderOrder(folders, path) {
+		e, ok := folders[k].(map[string]any)
+		if !ok {
+			continue
+		}
+		if p, ok := e["path"].(string); ok && filepath.IsAbs(p) {
+			paths = append(paths, p)
 		}
 	}
 	return paths, nil
+}
+
+// libraryFolderOrder is folders' keys in libraryfolders.vdf file order so InstallDir's first hit is stable when an
+// app is in more than one library. Keys the file does not name are sorted, so a parse that drops order still has one
+// sequence.
+func libraryFolderOrder(folders map[string]any, vdfPath string) []string {
+	seen := make(map[string]bool, len(folders))
+	var keys []string
+	if body, err := os.ReadFile(vdfPath); err == nil {
+		i := 0
+		for i < len(body) {
+			if body[i] != '"' {
+				i++
+				continue
+			}
+			i++
+			start := i
+			for i < len(body) && body[i] != '"' {
+				if body[i] == '\\' && i+1 < len(body) {
+					i += 2
+					continue
+				}
+				i++
+			}
+			tok := string(body[start:i])
+			if i < len(body) {
+				i++
+			}
+			if _, ok := folders[tok]; ok && !seen[tok] {
+				seen[tok] = true
+				keys = append(keys, tok)
+			}
+		}
+	}
+	var rest []string
+	for k := range folders {
+		if !seen[k] {
+			rest = append(rest, k)
+		}
+	}
+	slices.Sort(rest)
+	return append(keys, rest...)
 }
 
 // InstallDir returns the install directory of appID, or "" when it is not installed or appID is not numeric.

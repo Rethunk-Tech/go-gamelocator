@@ -269,3 +269,56 @@ func FuzzTextVDF(f *testing.F) {
 		}
 	})
 }
+
+func TestInstallDirLibraryFileOrder(t *testing.T) {
+	root := t.TempDir()
+	libA := filepath.Join(t.TempDir(), "libA")
+	libB := filepath.Join(t.TempDir(), "libB")
+	appID := "480"
+	writeLib := func(lib, name string) {
+		t.Helper()
+		if err := os.MkdirAll(filepath.Join(lib, "steamapps", "common", name), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		acf := `"AppState"
+{
+	"appid"		"480"
+	"installdir"		"` + name + `"
+}
+`
+		if err := os.WriteFile(filepath.Join(lib, "steamapps", "appmanifest_"+appID+".acf"), []byte(acf), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	writeLib(libA, "GameA")
+	writeLib(libB, "GameB")
+	vdf := `"libraryfolders"
+{
+	"b"
+	{
+		"path"		"` + libA + `"
+	}
+	"a"
+	{
+		"path"		"` + libB + `"
+	}
+}
+`
+	if err := os.MkdirAll(filepath.Join(root, "steamapps"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "steamapps", "libraryfolders.vdf"), []byte(vdf), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s := Steam{Root: root}
+	want := filepath.Join(libA, "steamapps", "common", "GameA")
+	for i := 0; i < 80; i++ {
+		got, err := s.InstallDir(appID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got != want {
+			t.Fatalf("call %d: InstallDir = %q, want first library in file order %q", i+1, got, want)
+		}
+	}
+}
