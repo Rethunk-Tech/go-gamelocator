@@ -196,34 +196,10 @@ func (s Steam) Libraries() ([]string, error) {
 func libraryFolderOrder(folders map[string]any, vdfPath string) []string {
 	seen := make(map[string]bool, len(folders))
 	var keys []string
-	if f, err := safefs.Open(vdfPath); err == nil {
-		body, err := safefs.ReadCapped(f, maxTextVDFBytes)
-		_ = f.Close()
-		if err == nil {
-			i := 0
-			for i < len(body) {
-				if body[i] != '"' {
-					i++
-					continue
-				}
-				i++
-				start := i
-				for i < len(body) && body[i] != '"' {
-					if body[i] == '\\' && i+1 < len(body) {
-						i += 2
-						continue
-					}
-					i++
-				}
-				tok := string(body[start:i])
-				if i < len(body) {
-					i++
-				}
-				if _, ok := folders[tok]; ok && !seen[tok] {
-					seen[tok] = true
-					keys = append(keys, tok)
-				}
-			}
+	for _, tok := range quotedTokens(vdfPath) {
+		if _, ok := folders[tok]; ok && !seen[tok] {
+			seen[tok] = true
+			keys = append(keys, tok)
 		}
 	}
 	var rest []string
@@ -234,6 +210,37 @@ func libraryFolderOrder(folders map[string]any, vdfPath string) []string {
 	}
 	slices.Sort(rest)
 	return append(keys, rest...)
+}
+
+// quotedTokens is every double-quoted token of the text VDF at path in file order, or nil when it cannot be read.
+func quotedTokens(path string) []string {
+	f, err := safefs.Open(path)
+	if err != nil {
+		return nil
+	}
+	body, err := safefs.ReadCapped(f, maxTextVDFBytes)
+	_ = f.Close()
+	if err != nil {
+		return nil
+	}
+	var toks []string
+	for i := 0; i < len(body); {
+		if body[i] != '"' {
+			i++
+			continue
+		}
+		i++
+		start := i
+		for i < len(body) && body[i] != '"' {
+			if body[i] == '\\' && i+1 < len(body) {
+				i++
+			}
+			i++
+		}
+		toks = append(toks, string(body[start:min(i, len(body))]))
+		i++
+	}
+	return toks
 }
 
 // InstallDir returns the install directory of appID, or "" when it is not installed or appID is not numeric.
