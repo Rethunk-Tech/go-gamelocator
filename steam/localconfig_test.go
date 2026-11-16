@@ -114,3 +114,23 @@ func TestSetLaunchOptionsIdentityMergeKeepsBytes(t *testing.T) {
 		t.Fatalf("value = %q, want %q", value, want)
 	}
 }
+
+// A merged newline must reach the file escaped: written raw it ends the token, so Steam would load a short value.
+func TestSetLaunchOptionsEscapesMergedNewline(t *testing.T) {
+	in := []byte(strings.Replace(localConfig, `"-old"`, `"C:\new\saves -old"`, 1))
+	want := `C:\new\saves -old` + "\nEXTRA"
+
+	out, value, err := setLaunchOptions(in, "413150", func(o string) string { return o + "\nEXTRA" })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if value != want {
+		t.Fatalf("value = %q, want %q", value, want)
+	}
+	if !bytes.Contains(out, []byte(`\nEXTRA"`)) {
+		t.Fatalf("the newline was not written as an escape:\n%s", out)
+	}
+	if !bytes.Contains(out, []byte(`"friends"`)) {
+		t.Fatal("other content must be kept")
+	}
+}
