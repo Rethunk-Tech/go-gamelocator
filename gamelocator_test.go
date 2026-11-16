@@ -48,3 +48,19 @@ func TestGameDirRefusesRelativeDirs(t *testing.T) {
 		}
 	}
 }
+
+func TestGameDirRejectsNonLocalMarker(t *testing.T) {
+	dir := t.TempDir()
+	outside := filepath.Join(filepath.Dir(dir), "outside-marker")
+	if err := os.WriteFile(outside, []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Remove(outside) })
+	marker := filepath.Join("..", filepath.Base(outside))
+	if filepath.IsLocal(marker) {
+		t.Fatalf("precondition: %q must be non-local", marker)
+	}
+	if got := GameDir(dir, marker); got != "" {
+		t.Fatalf("GameDir(%q, %q) = %q, want empty", dir, marker, got)
+	}
+}

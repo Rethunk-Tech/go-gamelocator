@@ -12,6 +12,9 @@ func GameDir(dir, marker string) string {
 	if !filepath.IsAbs(dir) {
 		return ""
 	}
+	if !filepath.IsLocal(marker) {
+		return ""
+	}
 	dir = filepath.Clean(dir)
 	for _, d := range []string{dir, filepath.Join(dir, "game")} {
 		if safefs.IsFile(filepath.Join(d, marker)) {
