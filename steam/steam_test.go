@@ -318,11 +318,11 @@ func TestInstallDirLibraryFileOrder(t *testing.T) {
 {
 	"b"
 	{
-		"path"		"` + libA + `"
+		"path"		"` + vdfEscape(libA) + `"
 	}
 	"a"
 	{
-		"path"		"` + libB + `"
+		"path"		"` + vdfEscape(libB) + `"
 	}
 }
 `
