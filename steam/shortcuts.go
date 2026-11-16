@@ -149,7 +149,7 @@ type Shortcut struct {
 }
 
 func (sc Shortcut) is(e vdfNode) bool {
-	if field(e, "Exe") != quoted(sc.Exe) {
+	if !strings.EqualFold(field(e, "Exe"), quoted(sc.Exe)) {
 		return false
 	}
 	if sc.Key == "" {

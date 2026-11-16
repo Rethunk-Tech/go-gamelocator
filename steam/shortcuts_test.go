@@ -138,3 +138,32 @@ func TestShortcutsVDFNestedPastTheLimitIsRefused(t *testing.T) {
 		t.Fatal("addShortcut must refuse a deeply nested file")
 	}
 }
+
+func TestAddShortcutSameExeDifferentCase(t *testing.T) {
+	sc1 := Shortcut{Name: "Game", Exe: `C:\Game\game.exe`, StartDir: `C:\Game`}
+	body, _, res, err := addShortcut(nil, sc1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res != Added {
+		t.Fatalf("first add: %s, want %s", res, Added)
+	}
+	sc2 := Shortcut{Name: "Game", Exe: `c:\game\game.exe`, StartDir: `c:\game`}
+	body, _, res, err = addShortcut(body, sc2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res == Added {
+		t.Fatalf("second add: %s, want update of the same exe", res)
+	}
+	want := quoted(sc2.Exe)
+	_, n, err := removeShortcuts(body, func(e, opts string) bool {
+		return strings.EqualFold(e, want) && strings.HasPrefix(opts, "")
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n != 1 {
+		t.Fatalf("removed %d, want 1", n)
+	}
+}
