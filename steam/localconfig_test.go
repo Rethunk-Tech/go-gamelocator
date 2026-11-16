@@ -115,22 +115,83 @@ func TestSetLaunchOptionsIdentityMergeKeepsBytes(t *testing.T) {
 	}
 }
 
-// A merged newline must reach the file escaped: written raw it ends the token, so Steam would load a short value.
-func TestSetLaunchOptionsEscapesMergedNewline(t *testing.T) {
-	in := []byte(strings.Replace(localConfig, `"-old"`, `"C:\new\saves -old"`, 1))
-	want := `C:\new\saves -old` + "\nEXTRA"
-
-	out, value, err := setLaunchOptions(in, "413150", func(o string) string { return o + "\nEXTRA" })
+func scanLaunchOpts(t *testing.T, b []byte, app string) (text string, span []byte) {
+	t.Helper()
+	toks, err := scanVDF(b)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if value != want {
-		t.Fatalf("value = %q, want %q", value, want)
+	loc, err := locateLaunchOptions(toks, app)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if !bytes.Contains(out, []byte(`\nEXTRA"`)) {
-		t.Fatalf("the newline was not written as an escape:\n%s", out)
+	if loc.optVal == nil {
+		t.Fatal("no LaunchOptions token")
 	}
-	if !bytes.Contains(out, []byte(`"friends"`)) {
-		t.Fatal("other content must be kept")
+	span = b[loc.optVal.start:loc.optVal.end]
+	if len(span) < 2 || span[0] != '"' || span[len(span)-1] != '"' {
+		t.Fatalf("LaunchOptions span %d..%d is not a quoted token: %q", loc.optVal.start, loc.optVal.end, span)
+	}
+	return loc.optVal.text, span
+}
+
+func parsedLaunchOpts(t *testing.T, b []byte, app string) string {
+	t.Helper()
+	m, err := parseTextVDF(b)
+	if err != nil {
+		t.Fatalf("parseTextVDF: %v\n%s", err, b)
+	}
+	node := m
+	for _, k := range []string{"UserLocalConfigStore", "Software", "Valve", "Steam", "apps", app} {
+		next, ok := child(node, k)
+		if !ok {
+			t.Fatalf("missing %s", k)
+		}
+		node = next
+	}
+	for k, v := range node {
+		if s, ok := v.(string); ok && strings.EqualFold(k, "LaunchOptions") {
+			return s
+		}
+	}
+	t.Fatal("no LaunchOptions")
+	return ""
+}
+
+// quoteVDF leaves newline and tab raw, matching Valve's writer, so a write-then-read of those
+// bytes (and of a Windows path, a quote, or a trailing backslash) must come back identical.
+func TestSetLaunchOptionsRoundTripsSpecialBytes(t *testing.T) {
+	cases := []struct {
+		name, value string
+	}{
+		{"newline", "a\nb"},
+		{"tab", "a\tb"},
+		{"backslash-n path", `C:\new\saves`},
+		{"quote", `say "hi"`},
+		{"trailing backslash", `dir\`},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			out, value, err := setLaunchOptions([]byte(localConfig), "413150", func(string) string { return tc.value })
+			if err != nil {
+				t.Fatal(err)
+			}
+			if value != tc.value {
+				t.Fatalf("returned %q, want %q", value, tc.value)
+			}
+			got, span := scanLaunchOpts(t, out, "413150")
+			if got != tc.value {
+				t.Fatalf("scanVDF = %q, want %q", got, tc.value)
+			}
+			if strings.ContainsRune(tc.value, '\n') && !bytes.Contains(span, []byte{'\n'}) {
+				t.Fatalf("quoted span escaped the newline: %q", span)
+			}
+			if strings.ContainsRune(tc.value, '\t') && !bytes.Contains(span, []byte{'\t'}) {
+				t.Fatalf("quoted span escaped the tab: %q", span)
+			}
+			if got := parsedLaunchOpts(t, out, "413150"); got != tc.value {
+				t.Fatalf("LaunchOptions = %q, want %q", got, tc.value)
+			}
+		})
 	}
 }

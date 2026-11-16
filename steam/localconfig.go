@@ -66,10 +66,10 @@ func scanVDF(b []byte) ([]vdfToken, error) {
 	return out, nil
 }
 
-// quoteVDF writes back every escape scanVDF decodes, so a merged value cannot put a raw newline or tab in the file,
-// where the parse takes it for whitespace between tokens instead of part of the value.
+// quoteVDF escapes only \ and ", matching Valve's KeyValues writer, which leaves newline and tab raw inside
+// quotes; a quoted token may span lines.
 func quoteVDF(s string) string {
-	return `"` + strings.NewReplacer(`\`, `\\`, `"`, `\"`, "\n", `\n`, "\t", `\t`).Replace(s) + `"`
+	return `"` + strings.NewReplacer(`\`, `\\`, `"`, `\"`).Replace(s) + `"`
 }
 
 // setLaunchOptions sets apps/<appID>/LaunchOptions under UserLocalConfigStore/Software/Valve/Steam to merge(old),
