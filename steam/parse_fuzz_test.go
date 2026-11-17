@@ -3,11 +3,26 @@ package steam
 import (
 	"bufio"
 	"bytes"
+	_ "embed"
 	"errors"
-	"os"
 	"strings"
 	"testing"
 )
+
+//go:embed testdata/localconfig-client.vdf
+var seedLocalConfigFile []byte
+
+//go:embed testdata/lib/steamapps/libraryfolders.vdf
+var seedLibraryFolders []byte
+
+//go:embed testdata/lib/steamapps/appmanifest_413150.acf
+var seedAppManifest []byte
+
+//go:embed testdata/lib/config/loginusers.vdf
+var seedLoginUsers []byte
+
+//go:embed testdata/appmanifest_depots.acf
+var seedDepots []byte
 
 var seedLocalConfig = []byte(`"UserLocalConfigStore"
 {
@@ -38,17 +53,9 @@ func FuzzScanVDF(f *testing.F) {
 }`))
 	f.Add([]byte(`"C:\\saves" "ok"`))
 	f.Add([]byte("\"k\"\t\"a\\\"b\\\\\""))
-	for _, name := range []string{
-		"testdata/localconfig-client.vdf",
-		"testdata/lib/steamapps/libraryfolders.vdf",
-		"testdata/lib/config/loginusers.vdf",
-	} {
-		b, err := os.ReadFile(name)
-		if err != nil {
-			f.Fatal(err)
-		}
-		f.Add(b)
-	}
+	f.Add(seedLocalConfigFile)
+	f.Add(seedLibraryFolders)
+	f.Add(seedLoginUsers)
 	f.Fuzz(func(t *testing.T, b []byte) {
 		if len(b) > 64<<10 {
 			return
@@ -103,19 +110,11 @@ func FuzzParseTextVDF(f *testing.F) {
 `))
 	f.Add([]byte("// \"\n" + strings.Repeat(`"a"{`, 40)))
 	f.Add([]byte("\"k\" { }\n// last line, no line ending"))
-	for _, name := range []string{
-		"testdata/localconfig-client.vdf",
-		"testdata/lib/steamapps/libraryfolders.vdf",
-		"testdata/lib/steamapps/appmanifest_413150.acf",
-		"testdata/lib/config/loginusers.vdf",
-		"testdata/appmanifest_depots.acf",
-	} {
-		b, err := os.ReadFile(name)
-		if err != nil {
-			f.Fatal(err)
-		}
-		f.Add(b)
-	}
+	f.Add(seedLocalConfigFile)
+	f.Add(seedLibraryFolders)
+	f.Add(seedAppManifest)
+	f.Add(seedLoginUsers)
+	f.Add(seedDepots)
 	f.Fuzz(func(t *testing.T, b []byte) {
 		if len(b) > 64<<10 {
 			return
