@@ -92,7 +92,7 @@ var reName = regexp.MustCompile(`(?m)^Name:\s*(.+?)\s*$`)
 func Name(bottle string) string {
 	if b, err := readcap.File(filepath.Join(bottle, "bottle.yml"), readcap.Config); err == nil {
 		if m := reName.FindSubmatch(b); m != nil {
-			if n := strings.Trim(string(m[1]), `"'`); n != "" {
+			if n := strings.Trim(string(m[1]), `"'`); n != "" && !strings.ContainsRune(n, 0) {
 				return n
 			}
 		}
