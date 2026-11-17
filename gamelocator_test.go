@@ -49,6 +49,34 @@ func TestGameDirRefusesRelativeDirs(t *testing.T) {
 	}
 }
 
+func FuzzGameDir(f *testing.F) {
+	f.Add("/abs/dir", "Game/Bin/TS4_x64.exe")
+	f.Add("/abs/dir", "x.dll")
+	f.Add("/abs/dir", "../outside")
+	f.Add("/abs/dir", "a/../../b")
+	f.Add("rel", "x.exe")
+	f.Add("", "x")
+	f.Fuzz(func(t *testing.T, dir, marker string) {
+		if len(dir)+len(marker) > 8<<10 {
+			return
+		}
+		got := GameDir(dir, marker)
+		if got == "" {
+			return
+		}
+		if !filepath.IsAbs(dir) {
+			t.Fatalf("relative dir %q -> %q", dir, got)
+		}
+		if !filepath.IsLocal(marker) {
+			t.Fatalf("non-local marker %q -> %q", marker, got)
+		}
+		clean := filepath.Clean(dir)
+		if got != clean && got != filepath.Join(clean, "game") {
+			t.Fatalf("got %q, not %q or its game subfolder", got, clean)
+		}
+	})
+}
+
 func TestGameDirRejectsNonLocalMarker(t *testing.T) {
 	dir := t.TempDir()
 	outside := filepath.Join(filepath.Dir(dir), "outside-marker")
