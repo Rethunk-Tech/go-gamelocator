@@ -44,3 +44,27 @@ func TestStoreHeroIsEmptyWhenTheStoreNamesNone(t *testing.T) {
 		t.Errorf("non-numeric id: %q", got)
 	}
 }
+
+func FuzzStoreHero(f *testing.F) {
+	f.Add([]byte(`{"response":{"store_items":[{"assets":{"asset_url_format":"steam/apps/42/${FILENAME}?t=1","header":"h.jpg"}}]}}`))
+	f.Add([]byte(`{"response":{"store_items":[{"assets":{"asset_url_format":"steam/apps/42/${FILENAME}","library_hero":"hero.jpg"}}]}}`))
+	f.Add([]byte(`{"response":{"store_items":[]}}`))
+	f.Add([]byte(`{"response":{"store_items":[{"assets":{"asset_url_format":"a/${FILENAME}"}}]}}`))
+	f.Add([]byte(`<html>`))
+	const assets = "https://cdn/"
+	f.Fuzz(func(t *testing.T, raw []byte) {
+		if len(raw) > 64<<10 {
+			return
+		}
+		got := storeHeroURL(raw, assets)
+		if got == "" {
+			return
+		}
+		if !strings.HasPrefix(got, assets) {
+			t.Fatalf("url %q is not under %s", got, assets)
+		}
+		if strings.Contains(got, "${FILENAME}") {
+			t.Fatalf("unexpanded placeholder: %q", got)
+		}
+	})
+}

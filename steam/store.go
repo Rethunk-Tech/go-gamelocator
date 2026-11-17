@@ -45,6 +45,10 @@ func storeHero(ctx context.Context, hc *http.Client, api, assets, appID string) 
 	if err != nil {
 		return ""
 	}
+	return storeHeroURL(raw, assets)
+}
+
+func storeHeroURL(raw []byte, assets string) string {
 	var body struct {
 		Response struct {
 			StoreItems []struct {

@@ -32,6 +32,33 @@ func TestInstalledDepots(t *testing.T) {
 	}
 }
 
+func FuzzDepotDownloadDir(f *testing.F) {
+	f.Add("/lib", "123", "456")
+	f.Add("/lib", "../x", "1")
+	f.Add("/lib", "1", "app/../../etc")
+	f.Add("", "1", "2")
+	f.Fuzz(func(t *testing.T, library, appID, depotID string) {
+		if len(library)+len(appID)+len(depotID) > 8<<10 {
+			return
+		}
+		got := DepotDownloadDir(library, appID, depotID)
+		numeric := numericID(appID) && numericID(depotID)
+		if got == "" {
+			if numeric {
+				t.Fatal("numeric ids returned empty")
+			}
+			return
+		}
+		if !numeric {
+			t.Fatalf("non-numeric ids produced %q", got)
+		}
+		want := filepath.Join(library, "steamapps", "content", "app_"+appID, "depot_"+depotID)
+		if got != want {
+			t.Fatalf("got %q, want %q", got, want)
+		}
+	})
+}
+
 func TestDepotDownloadDir(t *testing.T) {
 	want := filepath.Join("lib", "steamapps", "content", "app_1000", "depot_1001")
 	if got := DepotDownloadDir("lib", "1000", "1001"); got != want {

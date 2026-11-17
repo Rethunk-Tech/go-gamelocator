@@ -3,6 +3,9 @@ package steam
 import (
 	"bufio"
 	"bytes"
+	"errors"
+	"os"
+	"strings"
 	"testing"
 )
 
@@ -33,11 +36,41 @@ func FuzzScanVDF(f *testing.F) {
 	f.Add([]byte(`"k" { }`))
 	f.Add([]byte(`"k" { // c
 }`))
+	f.Add([]byte(`"C:\\saves" "ok"`))
+	f.Add([]byte("\"k\"\t\"a\\\"b\\\\\""))
+	for _, name := range []string{
+		"testdata/localconfig-client.vdf",
+		"testdata/lib/steamapps/libraryfolders.vdf",
+		"testdata/lib/config/loginusers.vdf",
+	} {
+		b, err := os.ReadFile(name)
+		if err != nil {
+			f.Fatal(err)
+		}
+		f.Add(b)
+	}
 	f.Fuzz(func(t *testing.T, b []byte) {
 		if len(b) > 64<<10 {
 			return
 		}
-		_, _ = scanVDF(b)
+		toks, err := scanVDF(b)
+		if err != nil {
+			return
+		}
+		prev := 0
+		for _, tk := range toks {
+			if tk.start < prev || tk.end > len(b) || tk.start >= tk.end {
+				t.Fatalf("span %d..%d after %d in %d bytes", tk.start, tk.end, prev, len(b))
+			}
+			prev = tk.end
+			if tk.kind != 's' {
+				continue
+			}
+			got, err := scanVDF([]byte(quoteVDF(tk.text)))
+			if err != nil || len(got) != 1 || got[0].kind != 's' || got[0].text != tk.text {
+				t.Fatalf("quote round-trip of %q: %v %#v", tk.text, err, got)
+			}
+		}
 	})
 }
 
@@ -68,11 +101,41 @@ func FuzzParseTextVDF(f *testing.F) {
 	}
 }
 `))
+	f.Add([]byte("// \"\n" + strings.Repeat(`"a"{`, 40)))
+	f.Add([]byte("\"k\" { }\n// last line, no line ending"))
+	for _, name := range []string{
+		"testdata/localconfig-client.vdf",
+		"testdata/lib/steamapps/libraryfolders.vdf",
+		"testdata/lib/steamapps/appmanifest_413150.acf",
+		"testdata/lib/config/loginusers.vdf",
+		"testdata/appmanifest_depots.acf",
+	} {
+		b, err := os.ReadFile(name)
+		if err != nil {
+			f.Fatal(err)
+		}
+		f.Add(b)
+	}
 	f.Fuzz(func(t *testing.T, b []byte) {
 		if len(b) > 64<<10 {
 			return
 		}
-		_, _ = parseTextVDF(b)
+		m, err := parseTextVDF(b)
+		if bytes.IndexByte(b, 0) >= 0 {
+			if err == nil {
+				t.Fatal("NUL accepted")
+			}
+			return
+		}
+		if depth, derr := textVDFDepth(b); derr == nil && depth > maxTextVDFDepth {
+			if err == nil || !errors.Is(err, ErrTooDeep) {
+				t.Fatalf("depth %d: %v", depth, err)
+			}
+			return
+		}
+		if err == nil && m == nil {
+			t.Fatal("nil map")
+		}
 	})
 }
 
