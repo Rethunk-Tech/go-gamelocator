@@ -292,6 +292,15 @@ func FuzzTextVDF(f *testing.F) {
 	})
 }
 
+func TestQuotedTokensDoesNotEndAtAnEscapedQuote(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "libraryfolders.vdf")
+	writeAt(t, path, []byte(`"a\"b" "c"`))
+	got := quotedTokens(path)
+	if len(got) != 2 || got[0] != `a\"b` || got[1] != "c" {
+		t.Fatalf("got %q", got)
+	}
+}
+
 func TestInstallDirLibraryFileOrder(t *testing.T) {
 	root := t.TempDir()
 	libA := filepath.Join(t.TempDir(), "libA")
