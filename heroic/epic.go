@@ -36,7 +36,11 @@ func EpicInstalls(cfg string) []epic.Install {
 		if !ok || path == "" {
 			continue
 		}
-		out = append(out, epic.Install{Dir: path, AppName: cmp.Or(jsonID(m["app_name"]), id)})
+		name := cmp.Or(jsonID(m["app_name"]), id)
+		if name == "" {
+			continue
+		}
+		out = append(out, epic.Install{Dir: path, AppName: name})
 	}
 	// Map order is random; callers take the first match.
 	slices.SortFunc(out, func(a, b epic.Install) int {
