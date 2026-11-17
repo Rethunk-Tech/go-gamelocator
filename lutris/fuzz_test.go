@@ -2,11 +2,15 @@ package lutris
 
 import (
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
 
 func FuzzWinePath(f *testing.F) {
+	if runtime.GOOS != "linux" {
+		f.Skip("Lutris and its Wine prefixes exist only on Linux")
+	}
 	f.Add("/tmp/pfx", `C:\GOG Games\Stardew Valley`)
 	f.Add("/tmp/pfx", `C:\..\..\outside`)
 	f.Add("/tmp/pfx", `..\..\outside`)
