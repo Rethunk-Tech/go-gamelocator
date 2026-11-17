@@ -204,4 +204,11 @@ func TestWinePathKeepsAHostAbsolutePath(t *testing.T) {
 	if got := winePath("", z); got != dir {
 		t.Fatalf("Z: %q → %q, want %q", z, got, dir)
 	}
+	// A prefix with no drive_c is still the root relative Wine paths sit under, but only when it is absolute.
+	if got := winePath(dir, "rel"); got != filepath.Join(dir, "rel") {
+		t.Fatalf("abs prefix without drive_c: %q", got)
+	}
+	if got := winePath("relative", "rel"); got != "" {
+		t.Fatalf("relative prefix: %q", got)
+	}
 }
