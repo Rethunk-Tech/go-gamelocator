@@ -212,3 +212,64 @@ func TestWinePathKeepsAHostAbsolutePath(t *testing.T) {
 		t.Fatalf("relative prefix: %q", got)
 	}
 }
+
+func TestLocateSkipsNonYamlAndDuplicateFolders(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("lutris discovery is Linux-only")
+	}
+	home := t.TempDir()
+	games := filepath.Join(home, ".local", "share", "lutris", "games")
+	if err := os.MkdirAll(filepath.Join(games, "subdir"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	install := filepath.Join(home, "sdv")
+	if err := os.MkdirAll(install, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := safefs.WriteFile(filepath.Join(install, "Stardew Valley.dll"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	yml := "game_slug: stardew-valley\ngame:\n  working_dir: " + install + "\n"
+	for _, name := range []string{"a.yml", "b.yml"} {
+		if err := safefs.WriteFile(filepath.Join(games, name), []byte(yml), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := safefs.WriteFile(filepath.Join(games, "notes.txt"), []byte(yml), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := safefs.WriteFile(filepath.Join(games, "other.yml"), []byte("game_slug: other\ngame:\n  working_dir: "+install+"\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	found := Locate(home, testGame, filepath.Join(home, "no-such-configs"))
+	if len(found) != 1 || found[0].Dir != install {
+		t.Fatalf("Locate = %+v", found)
+	}
+}
+
+func TestWinePathRejectsEmptyAndDrivesOtherThanCOrZ(t *testing.T) {
+	if got := winePath("/prefix", ""); got != "" {
+		t.Fatalf("empty: %q", got)
+	}
+	if _, ok := fromWindowsDrive("/prefix", `1:\Games`); ok {
+		t.Fatal("non-letter drive")
+	}
+	if unix, ok := fromWindowsDrive("/prefix", `D:\Games`); ok || unix != "" {
+		t.Fatalf("D: %q", unix)
+	}
+	// Z: plus a Windows host path is not a Wine Z:\unix mapping.
+	if _, ok := fromWindowsDrive("/prefix", `Z:C:\Users`); ok {
+		t.Fatal("Z: host path")
+	}
+}
+
+func TestInstallWhenTheExeFieldIsTheGameFolder(t *testing.T) {
+	dir := t.TempDir()
+	if err := safefs.WriteFile(filepath.Join(dir, "Stardew Valley.dll"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got := newMatcher(testGame).installFromYAML("game_slug: stardew-valley\ngame:\n  exe: " + dir + "\n")
+	if got != dir {
+		t.Fatalf("install = %q, want %q", got, dir)
+	}
+}
