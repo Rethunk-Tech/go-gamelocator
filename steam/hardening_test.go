@@ -86,8 +86,9 @@ func TestLibrariesRefuseRelativePaths(t *testing.T) {
 func TestLibrariesSkipEntriesThatAreNotMapsAndRefuseAFileWithoutTheSection(t *testing.T) {
 	root := t.TempDir()
 	lib := filepath.Join(t.TempDir(), "lib")
+	// Steam escapes the separator in a quoted VDF value, and the parser drops a lone backslash.
 	writeAt(t, filepath.Join(root, "steamapps", "libraryfolders.vdf"),
-		[]byte(`"libraryfolders" { "0" "not a map" "1" { "path" "`+lib+`" } }`))
+		[]byte(`"libraryfolders" { "0" "not a map" "1" { "path" "`+strings.ReplaceAll(lib, `\`, `\\`)+`" } }`))
 	got, err := Steam{Root: root}.Libraries()
 	if err != nil || len(got) != 1 || got[0] != lib {
 		t.Fatalf("libraries = %v, %v", got, err)

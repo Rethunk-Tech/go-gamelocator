@@ -257,9 +257,14 @@ func TestWinePathRejectsEmptyAndDrivesOtherThanCOrZ(t *testing.T) {
 	if unix, ok := fromWindowsDrive("/prefix", `D:\Games`); ok || unix != "" {
 		t.Fatalf("D: %q", unix)
 	}
-	// Z: plus a Windows host path is not a Wine Z:\unix mapping.
-	if _, ok := fromWindowsDrive("/prefix", `Z:C:\Users`); ok {
-		t.Fatal("Z: host path")
+	// Z: plus a Windows host path is not a Wine Z:\unix mapping. On Windows that host path is itself absolute, so it
+	// comes back as the host path rather than being refused.
+	host, ok := fromWindowsDrive("/prefix", `Z:C:\Users`)
+	if ok != (runtime.GOOS == "windows") {
+		t.Fatalf("Z: host path = %q, %v", host, ok)
+	}
+	if ok && host != `C:\Users` {
+		t.Fatalf("Z: host path = %q", host)
 	}
 }
 
