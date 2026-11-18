@@ -167,3 +167,38 @@ func TestAddShortcutSameExeDifferentCase(t *testing.T) {
 		t.Fatalf("removed %d, want 1", n)
 	}
 }
+
+func TestShortcutsVDFRefusesTruncatedUnknownAndNonShortcutRoots(t *testing.T) {
+	sc := Shortcut{Name: "x", Exe: "/x"}
+	match := func(string, string) bool { return false }
+	for name, body := range map[string][]byte{
+		"empty":     {},
+		"truncated": {vdfInt32, 'k', 0, 1},
+		"uint64":    {vdfUint64, 'k', 0, 1},
+		"unknown":   {0x03, 'k', 0},
+	} {
+		if _, err := readVDFMap(bufio.NewReader(bytes.NewReader(body))); err == nil {
+			t.Errorf("%s: parsed", name)
+		}
+	}
+	var buf bytes.Buffer
+	if err := writeVDFMap(&buf, []vdfNode{{Kind: vdfMap, Key: "library"}}); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, _, err := addShortcut(buf.Bytes(), sc); !errors.Is(err, ErrNoShortcuts) {
+		t.Fatalf("add: %v", err)
+	}
+	if _, _, err := removeShortcuts(buf.Bytes(), match); !errors.Is(err, ErrNoShortcuts) {
+		t.Fatalf("remove: %v", err)
+	}
+}
+
+func TestAShortcutEntryWithoutAppidUsesTheDerivedId(t *testing.T) {
+	e := vdfNode{Child: []vdfNode{str("Exe", `"/opt/game"`), str("AppName", "Game")}}
+	if appIDOf(e) != shortcutAppID(`"/opt/game"`, "Game") {
+		t.Fatalf("derived id = %d", appIDOf(e))
+	}
+	if appIDOf(vdfNode{}) != shortcutAppID("", "") {
+		t.Fatal("an empty entry still has Steam's derived id")
+	}
+}

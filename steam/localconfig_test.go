@@ -195,3 +195,19 @@ func TestSetLaunchOptionsRoundTripsSpecialBytes(t *testing.T) {
 		})
 	}
 }
+
+func TestSetLaunchOptionsRefusesMalformedVDF(t *testing.T) {
+	merge := func(string) string { return "x" }
+	for name, in := range map[string]string{
+		"unterminated string": `"UserLocalConfigStore`,
+		"bare text":           `apps`,
+		"unbalanced close":    `}`,
+		"decoy nest": `"UserLocalConfigStore" {
+	"Software" { "Valve" { "Steam" { "other" { "deep" { } } } } }
+}`,
+	} {
+		if _, _, err := setLaunchOptions([]byte(in), "413150", merge); err == nil {
+			t.Errorf("%s: accepted", name)
+		}
+	}
+}

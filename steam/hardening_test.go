@@ -83,6 +83,24 @@ func TestLibrariesRefuseRelativePaths(t *testing.T) {
 	}
 }
 
+func TestLibrariesSkipEntriesThatAreNotMapsAndRefuseAFileWithoutTheSection(t *testing.T) {
+	root := t.TempDir()
+	lib := filepath.Join(t.TempDir(), "lib")
+	writeAt(t, filepath.Join(root, "steamapps", "libraryfolders.vdf"),
+		[]byte(`"libraryfolders" { "0" "not a map" "1" { "path" "`+lib+`" } }`))
+	got, err := Steam{Root: root}.Libraries()
+	if err != nil || len(got) != 1 || got[0] != lib {
+		t.Fatalf("libraries = %v, %v", got, err)
+	}
+	writeAt(t, filepath.Join(root, "steamapps", "libraryfolders.vdf"), []byte(`"other" { }`))
+	if _, err := (Steam{Root: root}).Libraries(); err == nil {
+		t.Fatal("a file without libraryfolders")
+	}
+	if _, err := (Steam{Root: t.TempDir()}).Libraries(); err == nil {
+		t.Fatal("a missing libraryfolders.vdf")
+	}
+}
+
 func TestShellQuoteKeepsOrdinaryPathsAndQuotesTheRest(t *testing.T) {
 	if got := OverrideCommand("/data/launcher"); !strings.Contains(got, " --filesystem=/data/launcher:ro ") {
 		t.Fatalf("plain path was altered: %q", got)

@@ -21,6 +21,32 @@ func TestProtonRankOrdersOtherBuildsByTheirNumbers(t *testing.T) {
 	}
 }
 
+func TestProtonRankPutsEqualVersionsTogetherAndNumberedReleasesAheadOfTheRest(t *testing.T) {
+	if protonRank("Proton 9.0", "Proton 9.0") != 0 {
+		t.Fatal("the same numbered release")
+	}
+	if protonRank("GE-Proton10-34", "Proton 9.0") <= 0 {
+		t.Fatal("a GE build ranked with or ahead of a numbered Valve release")
+	}
+	if protonRank("Proton 9.0", "GE-Proton10-34") >= 0 {
+		t.Fatal("a numbered Valve release ranked with or after GE")
+	}
+	if protonRank("GE-Proton10-34", "Proton - Experimental") <= 0 {
+		t.Fatal("GE ranked with or ahead of Experimental")
+	}
+	if protonRank("Proton - Experimental", "GE-Proton10-34") >= 0 {
+		t.Fatal("Experimental ranked with or after GE")
+	}
+}
+
+func TestProtonBuildsLeaveFlatpakSteamOut(t *testing.T) {
+	home := t.TempDir()
+	writeAt(t, filepath.Join(FlatpakRoot(home), "steamapps", "common", "Proton 9.0", "proton"), []byte("#!/bin/sh\n"))
+	if got := ProtonBuilds(home); len(got) != 0 {
+		t.Fatalf("flatpak builds = %#v", got)
+	}
+}
+
 func TestPickProtonMatchesSteamsToolBeforeTheBest(t *testing.T) {
 	found := []ProtonBuild{{Dir: "/c/GE-Proton10-34"}, {Dir: "/c/Proton 9.0 (Beta)"}, {Dir: "/c/Proton - Experimental"}}
 	for tool, want := range map[string]string{"proton_9": "Proton 9.0 (Beta)", "proton_experimental": "Proton - Experimental", "GE-Proton10-34": "GE-Proton10-34", "": "GE-Proton10-34", "proton_8": "GE-Proton10-34"} {
