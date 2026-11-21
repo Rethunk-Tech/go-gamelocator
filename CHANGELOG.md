@@ -6,6 +6,12 @@ Notable changes to `go-gamelocator`. The format follows
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-11-21
+
+### Fixed
+
+- `steam`: Steam files are parsed with vdf 2.1.1, which skips `[$PLATFORM]` conditionals, reads bare tokens such as `5.0` whole and refuses truncated input instead of returning a partial map.
+
 ## [0.4.2] - 2026-11-21
 
 ### Fixed
@@ -70,7 +76,8 @@ Notable changes to `go-gamelocator`. The format follows
   Heroic's Wine prefixes.
 - `gamelocator.GameDir`: confirm an install by a marker file at its root or in its `game` folder.
 
-[Unreleased]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.4.3...HEAD
+[0.4.3]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.4.0...v0.4.2
 [0.4.0]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.2.0...v0.3.0

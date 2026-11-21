@@ -46,8 +46,8 @@ github.com/Rethunk-Tech/go-httpkit v0.3.2 h1:CgAqZ0zXhJv4t06MVeBzc6BuruaaoVm8hKx
 github.com/Rethunk-Tech/go-httpkit v0.3.2/go.mod h1:t37P44k1JHd2Y3WFgpSUtgnDMQksyEyEd+WzdQaSdhY=
 github.com/Rethunk-Tech/go-safefs v0.10.0 h1:Mgey3ZSnsmHOAZqQBN0hAYyKyQNhrwjkJqnNbQD542I=
 github.com/Rethunk-Tech/go-safefs v0.10.0/go.mod h1:XfVUSO6B0XiU6C2v9sZXlEX/PP0eOAuYIt/0g7346Tk=
-github.com/Rethunk-Tech/vdf/v2 v2.1.0 h1:/7OQ4yK8FD4VTxd1ICFYt0S2M2LM5KeEBNyfFOG2xQw=
-github.com/Rethunk-Tech/vdf/v2 v2.1.0/go.mod h1:OBN36zQRuteUJTmSjV8JRSccMCP0Nf0AWJGaJLEhLPk=
+github.com/Rethunk-Tech/vdf/v2 v2.1.1 h1:+pfm//I9P5TVS0Qsq/x/MZuXbJ74uvZG7JEs5dutU+0=
+github.com/Rethunk-Tech/vdf/v2 v2.1.1/go.mod h1:++Bhv41jxA68m7vKEnNd7GLf6zBKzGaNZ+LDfGFW9lg=
 github.com/alecthomas/assert/v2 v2.11.0 h1:2Q9r3ki8+JYXvGsDyBXwH3LcJ+WK5D0gc5E8vS6K3D0=
 github.com/alecthomas/assert/v2 v2.11.0/go.mod h1:Bze95FyfUr7x34QZrjL+XP+0qgp/zg8yS+TtBj1WA3k=
 github.com/alecthomas/chroma/v2 v2.27.0 h1:FodwmyOBgJULFYmDqibcp9pvfDLWdtPRh9v/r5BXYZs=
