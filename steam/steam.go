@@ -214,12 +214,7 @@ func libraryFolderOrder(folders map[string]any, vdfPath string) []string {
 
 // quotedTokens is every double-quoted token of the text VDF at path in file order, or nil when it cannot be read.
 func quotedTokens(path string) []string {
-	f, err := safefs.Open(path)
-	if err != nil {
-		return nil
-	}
-	body, err := safefs.ReadCapped(f, maxTextVDFBytes)
-	_ = f.Close()
+	body, err := safefs.ReadFileCapped(path, maxTextVDFBytes)
 	if err != nil {
 		return nil
 	}
@@ -375,12 +370,7 @@ const (
 )
 
 func parseVDF(path string) (map[string]any, error) {
-	f, err := safefs.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = f.Close() }()
-	body, err := safefs.ReadCapped(f, maxTextVDFBytes)
+	body, err := safefs.ReadFileCapped(path, maxTextVDFBytes)
 	if errors.Is(err, safefs.ErrTooLarge) {
 		return nil, fmt.Errorf("%s is larger than %d bytes", filepath.Base(path), maxTextVDFBytes)
 	}

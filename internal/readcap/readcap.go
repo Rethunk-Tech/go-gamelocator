@@ -11,10 +11,5 @@ const Image = 32 << 20
 
 // File reads the regular file at path, failing with safefs.ErrTooLarge when it holds more than limit bytes.
 func File(path string, limit int64) ([]byte, error) {
-	f, err := safefs.OpenRegular(path)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = f.Close() }()
-	return safefs.ReadCapped(f, limit)
+	return safefs.ReadFileCapped(path, limit)
 }
