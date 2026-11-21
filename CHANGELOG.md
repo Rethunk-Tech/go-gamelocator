@@ -8,6 +8,7 @@ Notable changes to `go-gamelocator`. The format follows
 
 ### Fixed
 
+- Launcher and Steam files are read with `safefs.ReadFileCapped`, so a FIFO at the path is refused instead of blocking.
 - `epic`: `Installs` skips a malformed or incomplete entry instead of dropping the list.
 - `heroic`: `GOGInstalls` skips a malformed entry instead of dropping the list, and accepts a numeric product id.
 - `heroic`: `EpicInstalls` skips a malformed entry instead of dropping the list, and uses the map key when `app_name` is missing.
