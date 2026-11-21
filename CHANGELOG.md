@@ -6,6 +6,8 @@ Notable changes to `go-gamelocator`. The format follows
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-11-21
+
 ### Fixed
 
 - Launcher and Steam files are read with `safefs.ReadFileCapped`, so a FIFO at the path is refused instead of blocking.
@@ -68,7 +70,8 @@ Notable changes to `go-gamelocator`. The format follows
   Heroic's Wine prefixes.
 - `gamelocator.GameDir`: confirm an install by a marker file at its root or in its `game` folder.
 
-[Unreleased]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.4.0...v0.4.2
 [0.4.0]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Rethunk-Tech/go-gamelocator/compare/v0.1.0...v0.2.0
