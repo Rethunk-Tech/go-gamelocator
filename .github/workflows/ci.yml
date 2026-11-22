@@ -53,7 +53,6 @@ jobs:
   test:
     # Windows has its own path, permission and filesystem rules, which only this leg reaches.
     strategy:
-      # Both legs report, so one platform's failure never hides the other's.
       fail-fast: false
       matrix:
         os: [windows-latest]
